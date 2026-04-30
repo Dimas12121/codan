@@ -13,6 +13,9 @@ class ApiClient {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
       ),
     );
 
@@ -26,12 +29,46 @@ class ApiClient {
           }
           return handler.next(options);
         },
-        onError: (DioException e, handler) {
+        onError: (DioException e, handler) async {
           if (e.response?.statusCode == 401) {
-            // Handle unauthorized error (e.g., clear token and redirect to login)
-            // This might need a reference to a global navigator or event bus
+            // Handle unauthorized error - clear token and redirect to login
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.remove('access_token');
+            await prefs.remove('refresh_token');
+            await prefs.remove('user_data');
+
+            // You can add event bus or navigation logic here
+            // For example: EventBus().fire(LogoutEvent());
           }
-          return handler.next(e);
+
+          // Handle network errors
+          if (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.sendTimeout) {
+            throw 'Connection timeout. Please check your internet connection.';
+          }
+
+          if (e.type == DioExceptionType.connectionError) {
+            throw 'Unable to connect to server. Please check your network.';
+          }
+
+          // Handle Laravel validation errors
+          if (e.response?.statusCode == 422) {
+            final errors = e.response?.data['errors'];
+            if (errors != null) {
+              final errorMessages = errors.values
+                  .map((list) => list.join(', '))
+                  .join('\n');
+              throw errorMessages;
+            }
+          }
+
+          // Default error message
+          final errorMessage =
+              e.response?.data['message'] ??
+              e.message ??
+              'An error occurred. Please try again.';
+          throw errorMessage;
         },
       ),
     );

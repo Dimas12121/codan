@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/environment.dart';
 
 class AppColors {
   static const primary = Color(0xFF7E57C2); // Modern Violet
@@ -13,7 +14,7 @@ class AppColors {
   static const accentPink = Color(0xFFFCE4EC);
   static const accentOrange = Color(0xFFFFF3E0);
   static const accentGreen = Color(0xFFE8F5E9);
-  
+
   static const cardBackground = Color(0xFFFFFFFF);
   static const navInactive = Color(0xFFBDBDBD);
 
@@ -30,6 +31,31 @@ class AppColors {
 }
 
 class AppConstants {
-  static const appName = 'CODean';
-  static const baseUrl = 'http://10.0.2.2:8000/api'; // For Android emulator
+  static String get appName => EnvironmentConfig.appName;
+
+  // Database Configuration (for reference - actual DB is on Laravel backend)
+  static const dbName = 'codean_db';
+  static const dbUser = 'root';
+  static const dbPassword = '';
+  static const dbHost = '127.0.0.1';
+  static const dbPort = 3306;
+
+  // Base URL untuk Laravel Backend dengan MySQL
+  // Menggunakan EnvironmentConfig untuk switching otomatis
+  static String get baseUrl => EnvironmentConfig.baseUrl;
+
+  // Endpoint API Laravel dengan MySQL
+  static const loginEndpoint = '/login';
+  static const loginPhoneEndpoint = '/login-phone';
+  static const registerEndpoint = '/register';
+  static const registerWithPhoneEndpoint = '/register-with-phone';
+  static const logoutEndpoint = '/logout';
+  static const userEndpoint = '/user';
+
+  // OTP Endpoints
+  static const sendOtpEndpoint = '/send-otp-whatsapp';
+  static const verifyOtpEndpoint = '/verify-otp';
+  static const checkPhoneEndpoint = '/check-phone';
+  static const updatePhoneEndpoint = '/update-phone';
 }
+ 

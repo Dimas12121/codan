@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../widgets/category_item.dart';
 import '../widgets/product_card.dart';
 import '../../domain/entities/product.dart';
-import '../pages/product_detail_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

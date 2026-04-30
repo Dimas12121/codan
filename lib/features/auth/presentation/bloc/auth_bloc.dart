@@ -10,7 +10,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<AuthLoginRequested>(_onAuthLoginRequested);
     on<AuthRegisterRequested>(_onAuthRegisterRequested);
+    on<AuthRegisterWithPhoneRequested>(_onAuthRegisterWithPhoneRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
+    on<AuthLoginPhoneRequested>(_onAuthLoginPhoneRequested);
   }
 
   Future<void> _onAuthCheckRequested(
@@ -49,6 +51,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         event.name,
         event.email,
         event.password,
+      );
+      emit(Authenticated(user));
+    } catch (e) {
+      emit(AuthFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onAuthRegisterWithPhoneRequested(
+    AuthRegisterWithPhoneRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final user = await authRepository.registerWithPhone(
+        name: event.name,
+        email: event.email,
+        phone: event.phone,
+        password: event.password,
+      );
+      emit(Authenticated(user));
+    } catch (e) {
+      emit(AuthFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onAuthLoginPhoneRequested(
+    AuthLoginPhoneRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final user = await authRepository.loginWithPhone(
+        phone: event.phone,
+        otp: event.otp,
       );
       emit(Authenticated(user));
     } catch (e) {

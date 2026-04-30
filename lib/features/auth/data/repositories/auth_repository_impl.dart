@@ -2,6 +2,7 @@ import '../datasources/auth_local_data_source.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../../../core/api/models/api_response.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -14,33 +15,82 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> login(String email, String password) async {
-    final response = await remoteDataSource.login(email, password);
-    final token = response['access_token'];
-    await localDataSource.saveToken(token);
-    return User.fromJson(response['user']);
+    final apiResponse = await remoteDataSource.login(email, password);
+
+    if (apiResponse.success && apiResponse.data != null) {
+      final responseData = apiResponse.data!;
+      final token = responseData['access_token'];
+      await localDataSource.saveToken(token);
+      return User.fromJson(responseData['user']);
+    } else {
+      throw apiResponse.message;
+    }
   }
 
   @override
   Future<User> register(String name, String email, String password) async {
-    final response = await remoteDataSource.register(name, email, password);
-    final token = response['access_token'];
-    await localDataSource.saveToken(token);
-    return User.fromJson(response['user']);
+    // For backward compatibility, use registerWithPhone with empty phone
+    return await registerWithPhone(
+      name: name,
+      email: email,
+      phone: '',
+      password: password,
+    );
+  }
+
+  @override
+  Future<User> registerWithPhone({
+    required String name,
+    required String email,
+    required String phone,
+    required String password,
+  }) async {
+    final apiResponse = await remoteDataSource.registerWithPhone(
+      name: name,
+      email: email,
+      phone: phone,
+      password: password,
+    );
+
+    if (apiResponse.success && apiResponse.data != null) {
+      final responseData = apiResponse.data!;
+      final token = responseData['access_token'];
+      await localDataSource.saveToken(token);
+      return User.fromJson(responseData['user']);
+    } else {
+      throw apiResponse.message;
+    }
   }
 
   @override
   Future<void> logout() async {
-    await remoteDataSource.logout();
-    await localDataSource.clearToken();
+    final apiResponse = await remoteDataSource.logout();
+
+    if (apiResponse.success) {
+      await localDataSource.clearToken();
+    } else {
+      // Even if logout API fails, clear local token
+      await localDataSource.clearToken();
+    }
   }
 
   @override
   Future<User?> getCurrentUser() async {
     final token = await localDataSource.getToken();
     if (token == null) return null;
+
     try {
-      return await remoteDataSource.getUser();
+      final apiResponse = await remoteDataSource.getUser();
+
+      if (apiResponse.success && apiResponse.data != null) {
+        return apiResponse.data!;
+      } else {
+        // If API returns unsuccessful response, clear token
+        await localDataSource.clearToken();
+        return null;
+      }
     } catch (_) {
+      // If any error occurs, clear token for security
       await localDataSource.clearToken();
       return null;
     }
@@ -50,5 +100,71 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<bool> isAuthenticated() async {
     final token = await localDataSource.getToken();
     return token != null;
+  }
+
+  @override
+  Future<User> loginWithPhone({
+    required String phone,
+    required String otp,
+  }) async {
+    final apiResponse = await remoteDataSource.loginWithPhone(
+      phone: phone,
+      otp: otp,
+    );
+
+    if (apiResponse.success && apiResponse.data != null) {
+      final responseData = apiResponse.data!;
+      final token = responseData['access_token'];
+      await localDataSource.saveToken(token);
+      return User.fromJson(responseData['user']);
+    } else {
+      throw apiResponse.message;
+    }
+  }
+
+  // OTP Methods
+  @override
+  Future<ApiResponse<Map<String, dynamic>>> sendOTPviaWhatsApp({
+    required String phone,
+    required String otp,
+    String? email,
+    String purpose = 'register',
+  }) async {
+    return await remoteDataSource.sendOTPviaWhatsApp(
+      phone: phone,
+      otp: otp,
+      email: email,
+      purpose: purpose,
+    );
+  }
+
+  @override
+  Future<ApiResponse<Map<String, dynamic>>> verifyOTP({
+    required String phone,
+    required String otp,
+    String? email,
+    String purpose = 'register',
+  }) async {
+    return await remoteDataSource.verifyOTP(
+      phone: phone,
+      otp: otp,
+      email: email,
+      purpose: purpose,
+    );
+  }
+
+  @override
+  Future<ApiResponse<Map<String, dynamic>>> checkPhoneAvailability(
+    String phone,
+  ) async {
+    return await remoteDataSource.checkPhoneAvailability(phone);
+  }
+
+  @override
+  Future<ApiResponse<Map<String, dynamic>>> updatePhone({
+    required String phone,
+    required String otp,
+  }) async {
+    return await remoteDataSource.updatePhone(phone: phone, otp: otp);
   }
 }
