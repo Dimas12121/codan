@@ -151,7 +151,25 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 if (state is ChatMessagesLoading) {
                   return const Center(child: CircularProgressIndicator(color: AppColors.primary));
                 } else if (state is ChatMessagesError) {
-                  return Center(child: Text('Error: ${state.message}'));
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(40.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                          const SizedBox(height: 16),
+                          Text(
+                            partnerId == 0 
+                                ? 'ID Penjual tidak valid. Silakan coba buka produk ini lagi.' 
+                                : 'Error: ${state.message}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 } else if (state is ChatMessagesLoaded) {
                   final messages = state.messages;
                   

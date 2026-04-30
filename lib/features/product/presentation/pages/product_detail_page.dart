@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../offer/presentation/bloc/offer_bloc.dart';
 import '../../domain/entities/product.dart';
 
 class ProductDetailPage extends StatelessWidget {
@@ -317,66 +323,120 @@ class ProductDetailPage extends StatelessWidget {
   }
 
   Widget _buildBottomBar(BuildContext context) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade200),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-                label: const Text('Keranjang'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        final currentUser = authState is Authenticated ? authState.user : null;
+        final isOwnProduct = currentUser?.id == product.seller.id;
+
+        return Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 2,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    if (isOwnProduct) {
+                      AppSnackBar.showInfo(context, 'Ini adalah produk Anda sendiri');
+                      return;
+                    }
+                    context.push('/chat/detail', extra: {
+                      'produk_id': product.id,
+                      'partner_id': product.seller.id,
+                      'name': product.seller.name,
+                      'avatar': product.seller.avatarUrl ?? 'assets/images/user_placeholder.png',
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade200),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary),
+                  ),
                 ),
-                child: Text(
-                  product.type == 'rent' ? 'Sewa Sekarang' : 'Beli Sekarang',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      AppSnackBar.showInfo(context, 'Fitur keranjang segera hadir!');
+                    },
+                    icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                    label: const Text('cart'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: BlocListener<OfferBloc, OfferState>(
+                    listener: (context, state) {
+                      if (state is OfferOperationSuccess) {
+                        AppSnackBar.showSuccess(context, state.message);
+                      } else if (state is OfferError) {
+                        AppSnackBar.showError(context, state.message);
+                      }
+                    },
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (isOwnProduct) {
+                          AppSnackBar.showInfo(context, 'Ini adalah produk Anda sendiri');
+                          return;
+                        }
+                        
+                        context.read<OfferBloc>().add(CreateOfferEvent(
+                          produkId: product.id,
+                          offerPrice: product.price,
+                          message: 'Saya ingin ${product.type == 'rent' ? 'menyewa' : 'membeli'} produk ini.',
+                        ));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      ),
+                      child: BlocBuilder<OfferBloc, OfferState>(
+                        builder: (context, state) {
+                          if (state is OfferLoading) {
+                            return const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            );
+                          }
+                          return Text(
+                            product.type == 'rent' ? 'Sewa Sekarang' : 'Beli Sekarang',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

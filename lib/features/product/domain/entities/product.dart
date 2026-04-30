@@ -1,3 +1,5 @@
+import '../../../../core/constants/app_constants.dart';
+
 class Product {
   final int id;
   final String title;
@@ -41,16 +43,19 @@ class Product {
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
       description: json['description'] ?? '',
       imageUrl: json['featured_image']?['image_path'] != null 
-          ? 'http://127.0.0.1:8000${json['featured_image']['image_path']}'
-          : null,
+          ? '${AppConstants.baseUrl}${json['featured_image']['image_path']}'
+          : (json['images'] != null && (json['images'] as List).isNotEmpty 
+              ? '${AppConstants.baseUrl}${(json['images'] as List).first['image_path']}'
+              : null),
       category: json['category']?['name'] ?? '',
       condition: json['condition'] ?? 'used',
       location: json['location'] ?? '',
       views: json['views_count'] ?? 0,
-      messages: 0, // usually requires separate logic or count field
+      messages: 0,
       type: json['type'] ?? 'sell',
       rentalPeriod: json['rental_period'],
       seller: Seller.fromJson(json['user'] ?? {}),
+      isLiked: json['is_wishlist'] ?? false,
     );
   }
 }
@@ -75,11 +80,13 @@ class Seller {
   factory Seller.fromJson(Map<String, dynamic> json) {
     return Seller(
       id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      avatarUrl: json['avatar'] != null ? 'http://127.0.0.1:8000/storage/${json['avatar']}' : null,
-      major: json['major'] ?? '-',
-      rating: '5.0', // placeholder if not from backend
-      isVerified: true, // placeholder
+      name: json['name'] ?? 'Penjual',
+      avatarUrl: json['avatar'] != null 
+          ? (json['avatar'].toString().startsWith('http') ? json['avatar'] : '${AppConstants.baseUrl}/storage/${json['avatar']}')
+          : null,
+      major: json['major'] ?? 'Teknik Multimedia',
+      rating: json['rating']?.toString() ?? '5.0',
+      isVerified: true,
     );
   }
 }

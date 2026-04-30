@@ -1,0 +1,478 @@
+digraph "G" {
+style="filled"
+bgcolor="#F7F7F7"
+fontsize="12"
+labelloc="t"
+concentrate="1"
+splines="polyline"
+overlap=""
+nodesep="1"
+rankdir="LR"
+pad="0.5"
+ranksep="2"
+esep="1"
+fontname="Helvetica Neue"
+appmodelscategory:id -> appmodelsproduk:category_id [
+label=" "
+xlabel="HasMany
+produks"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelscategory:parent_id -> appmodelscategory:id [
+label=" "
+xlabel="BelongsTo
+parent"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelscategory:id -> appmodelscategory:parent_id [
+label=" "
+xlabel="HasMany
+children"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsmessage:sender_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+sender"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsmessage:receiver_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+receiver"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsmessage:produk_id -> appmodelsproduk:id [
+label=" "
+xlabel="BelongsTo
+produk"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsoffer:user_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+user"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsoffer:produk_id -> appmodelsproduk:id [
+label=" "
+xlabel="BelongsTo
+produk"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsproduk:user_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+user"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsproduk:category_id -> appmodelscategory:id [
+label=" "
+xlabel="BelongsTo
+category"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsproduk:id -> appmodelsprodukimage:produk_id [
+label=" "
+xlabel="HasMany
+images"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsproduk:id -> appmodelsprodukimage:produk_id [
+label=" "
+xlabel="HasOne
+featuredImage"
+color="#D62828"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="none"
+]
+appmodelsproduk:id -> appmodelsoffer:produk_id [
+label=" "
+xlabel="HasMany
+offers"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsproduk:id -> appmodelsreview:produk_id [
+label=" "
+xlabel="HasMany
+reviews"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsproduk:id -> appmodelswishlist:produk_id [
+label=" "
+xlabel="HasMany
+wishlists"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsprodukimage:produk_id -> appmodelsproduk:id [
+label=" "
+xlabel="BelongsTo
+produk"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsreport:user_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+user"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsreport:produk_id -> appmodelsproduk:id [
+label=" "
+xlabel="BelongsTo
+produk"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsreview:reviewer_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+reviewer"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsreview:reviewee_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+reviewee"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsreview:produk_id -> appmodelsproduk:id [
+label=" "
+xlabel="BelongsTo
+produk"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsuser:id -> appmodelsproduk:user_id [
+label=" "
+xlabel="HasMany
+produks"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsuser:id -> appmodelsoffer:user_id [
+label=" "
+xlabel="HasMany
+offers"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsuser:id -> appmodelsreview:reviewee_id [
+label=" "
+xlabel="HasMany
+reviewsReceived"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsuser:id -> appmodelsreview:reviewer_id [
+label=" "
+xlabel="HasMany
+reviewsGiven"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsuser:id -> appmodelswishlist:user_id [
+label=" "
+xlabel="HasMany
+wishlists"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelswishlist:user_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+user"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelswishlist:produk_id -> appmodelsproduk:id [
+label=" "
+xlabel="BelongsTo
+produk"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+"appmodelscategory" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Category</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="name" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >name (varchar)</font></td></tr>
+<tr width="100%"><td port="slug" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >slug (varchar)</font></td></tr>
+<tr width="100%"><td port="icon" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >icon (varchar)</font></td></tr>
+<tr width="100%"><td port="parent_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >parent_id (integer)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsmessage" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Message</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="sender_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >sender_id (integer)</font></td></tr>
+<tr width="100%"><td port="receiver_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >receiver_id (integer)</font></td></tr>
+<tr width="100%"><td port="produk_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >produk_id (integer)</font></td></tr>
+<tr width="100%"><td port="message" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >message (text)</font></td></tr>
+<tr width="100%"><td port="image_path" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >image_path (varchar)</font></td></tr>
+<tr width="100%"><td port="latitude" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >latitude (numeric)</font></td></tr>
+<tr width="100%"><td port="longitude" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >longitude (numeric)</font></td></tr>
+<tr width="100%"><td port="is_read" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >is_read (tinyint(1))</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsoffer" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Offer</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="user_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >user_id (integer)</font></td></tr>
+<tr width="100%"><td port="produk_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >produk_id (integer)</font></td></tr>
+<tr width="100%"><td port="offer_price" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >offer_price (numeric)</font></td></tr>
+<tr width="100%"><td port="message" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >message (text)</font></td></tr>
+<tr width="100%"><td port="status" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >status (varchar)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsproduk" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Produk</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="user_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >user_id (integer)</font></td></tr>
+<tr width="100%"><td port="category_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >category_id (integer)</font></td></tr>
+<tr width="100%"><td port="title" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >title (varchar)</font></td></tr>
+<tr width="100%"><td port="slug" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >slug (varchar)</font></td></tr>
+<tr width="100%"><td port="description" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >description (text)</font></td></tr>
+<tr width="100%"><td port="price" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >price (numeric)</font></td></tr>
+<tr width="100%"><td port="views" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >views (integer)</font></td></tr>
+<tr width="100%"><td port="condition" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >condition (varchar)</font></td></tr>
+<tr width="100%"><td port="location" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >location (varchar)</font></td></tr>
+<tr width="100%"><td port="latitude" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >latitude (numeric)</font></td></tr>
+<tr width="100%"><td port="longitude" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >longitude (numeric)</font></td></tr>
+<tr width="100%"><td port="status" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >status (varchar)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsprodukimage" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">ProdukImage</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="produk_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >produk_id (integer)</font></td></tr>
+<tr width="100%"><td port="image_path" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >image_path (varchar)</font></td></tr>
+<tr width="100%"><td port="is_featured" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >is_featured (tinyint(1))</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsreport" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Report</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="user_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >user_id (integer)</font></td></tr>
+<tr width="100%"><td port="produk_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >produk_id (integer)</font></td></tr>
+<tr width="100%"><td port="reason" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >reason (varchar)</font></td></tr>
+<tr width="100%"><td port="details" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >details (text)</font></td></tr>
+<tr width="100%"><td port="status" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >status (varchar)</font></td></tr>
+<tr width="100%"><td port="admin_notes" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >admin_notes (text)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsreview" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Review</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="reviewer_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >reviewer_id (integer)</font></td></tr>
+<tr width="100%"><td port="reviewee_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >reviewee_id (integer)</font></td></tr>
+<tr width="100%"><td port="produk_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >produk_id (integer)</font></td></tr>
+<tr width="100%"><td port="rating" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >rating (integer)</font></td></tr>
+<tr width="100%"><td port="comment" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >comment (text)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsuser" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">User</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="name" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >name (varchar)</font></td></tr>
+<tr width="100%"><td port="email" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >email (varchar)</font></td></tr>
+<tr width="100%"><td port="avatar" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >avatar (varchar)</font></td></tr>
+<tr width="100%"><td port="email_verified_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >email_verified_at (datetime)</font></td></tr>
+<tr width="100%"><td port="password" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >password (varchar)</font></td></tr>
+<tr width="100%"><td port="phone" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >phone (varchar)</font></td></tr>
+<tr width="100%"><td port="location" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >location (varchar)</font></td></tr>
+<tr width="100%"><td port="role" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >role (varchar)</font></td></tr>
+<tr width="100%"><td port="is_active" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >is_active (tinyint(1))</font></td></tr>
+<tr width="100%"><td port="bio" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >bio (text)</font></td></tr>
+<tr width="100%"><td port="remember_token" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >remember_token (varchar)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelswishlist" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Wishlist</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (integer)</font></td></tr>
+<tr width="100%"><td port="user_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >user_id (integer)</font></td></tr>
+<tr width="100%"><td port="produk_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >produk_id (integer)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (datetime)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (datetime)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+}
