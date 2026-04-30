@@ -217,12 +217,7 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register dengan OTP'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      ),
+      backgroundColor: Colors.white,
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
@@ -236,215 +231,217 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
             );
           }
         },
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Daftar dengan OTP WhatsApp',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Kami akan mengirim kode OTP ke WhatsApp Anda',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 32),
-                Form(
-                  key: _formKey,
-                  child: Column(
+        child: Column(
+          children: [
+            // Top Section - Branding & Back Button
+            Expanded(
+              flex: 2,
+              child: Container(
+                color: Colors.white,
+                child: SafeArea(
+                  child: Stack(
                     children: [
-                      AuthTextField(
-                        controller: _nameController,
-                        hintText: 'Nama Lengkap',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Nama tidak boleh kosong';
-                          }
-                          if (value.length < 3) {
-                            return 'Nama minimal 3 karakter';
-                          }
-                          return null;
-                        },
+                      // Back Button
+                      Positioned(
+                        top: 10,
+                        left: 16,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.black),
+                          onPressed: () => context.pop(),
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      AuthTextField(
-                        controller: _emailController,
-                        hintText: 'Email',
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Email tidak boleh kosong';
-                          }
-                          if (!value.contains('@')) {
-                            return 'Email tidak valid';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      AuthTextField(
-                        controller: _phoneController,
-                        hintText: 'Nomor WhatsApp (contoh: 081234567890)',
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Nomor WhatsApp tidak boleh kosong';
-                          }
-                          if (!OTPService.isValidPhoneNumber(value)) {
-                            return 'Nomor WhatsApp tidak valid';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      AuthTextField(
-                        controller: _passwordController,
-                        hintText: 'Password',
-                        obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Password tidak boleh kosong';
-                          }
-                          if (value.length < 6) {
-                            return 'Password minimal 6 karakter';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      AuthTextField(
-                        controller: _confirmPasswordController,
-                        hintText: 'Konfirmasi Password',
-                        obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Konfirmasi password tidak boleh kosong';
-                          }
-                          if (value != _passwordController.text) {
-                            return 'Password tidak cocok';
-                          }
-                          return null;
-                        },
+                      // Logo
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/splash_logo.png',
+                              width: 100,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Text(
+                                    'CODan',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF2B37D4),
+                                    ),
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                if (!_showOTPField)
-                  ElevatedButton(
-                    onPressed: _isSendingOTP ? null : _sendOTP,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: _isSendingOTP
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.message, color: Colors.white),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Kirim OTP via WhatsApp',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            ),
-                    ),
+              ),
+            ),
+            // Bottom Section - Form & OTP
+            Expanded(
+              flex: 8,
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF2B37D4),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
                   ),
-                if (_showOTPField) ...[
-                  const SizedBox(height: 24),
-                  Card(
-                    color: AppColors.accentGreen,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          const Row(
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        _showOTPField ? 'Verify OTP' : 'Register with OTP',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _showOTPField
+                            ? 'Enter the code sent to your WhatsApp'
+                            : 'Sign up quickly using WhatsApp verification',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                      const SizedBox(height: 32),
+                      if (!_showOTPField)
+                        Form(
+                          key: _formKey,
+                          child: Column(
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text(
-                                'OTP Terkirim',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
+                              AuthTextField(
+                                controller: _nameController,
+                                hintText: 'Full Name',
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Name is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              AuthTextField(
+                                controller: _emailController,
+                                hintText: 'Email Address',
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Email is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              AuthTextField(
+                                controller: _phoneController,
+                                hintText: 'WhatsApp Number (08xxxx)',
+                                keyboardType: TextInputType.phone,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Phone is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              AuthTextField(
+                                controller: _passwordController,
+                                hintText: 'Password',
+                                obscureText: true,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Password is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              AuthTextField(
+                                controller: _confirmPasswordController,
+                                hintText: 'Confirm Password',
+                                obscureText: true,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Confirm password';
+                                  }
+                                  if (value != _passwordController.text) {
+                                    return 'Not match';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 32),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: _isSendingOTP ? null : _sendOTP,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFF2B37D4),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                  child: _isSendingOTP
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              Color(0xFF2B37D4),
+                                            ),
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Send OTP via WhatsApp',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Kode OTP telah dikirim ke $_maskedPhone',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.green),
-                          ),
-                          FutureBuilder<bool>(
-                            future: OTPService.canResendOTP(),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData && snapshot.data == false) {
-                                return FutureBuilder<int>(
-                                  future:
-                                      OTPService.getResendRemainingSeconds(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 8.0,
-                                        ),
-                                        child: Text(
-                                          'Dapat mengirim ulang dalam ${snapshot.data} detik',
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    return const SizedBox();
-                                  },
-                                );
-                              }
-                              return const SizedBox();
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Form(
-                    key: _otpFormKey,
-                    child: Column(
-                      children: [
-                        AuthTextField(
-                          controller: _otpController,
-                          hintText: 'Masukkan 6 digit OTP',
-                          keyboardType: TextInputType.number,
-                          validator: OTPService.validateOTP,
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: _isVerifyingOTP ? null : _verifyOTP,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16.0,
+                        )
+                      else
+                        Form(
+                          key: _otpFormKey,
+                          child: Column(
+                            children: [
+                              AuthTextField(
+                                controller: _otpController,
+                                hintText: '6 Digit OTP',
+                                keyboardType: TextInputType.number,
+                                validator: OTPService.validateOTP,
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      _isVerifyingOTP ? null : _verifyOTP,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFF2B37D4),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
                                   ),
                                   child: _isVerifyingOTP
                                       ? const SizedBox(
@@ -452,69 +449,42 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
                                           width: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color: Colors.white,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              Color(0xFF2B37D4),
+                                            ),
                                           ),
                                         )
                                       : const Text(
-                                          'Verifikasi OTP',
-                                          style: TextStyle(fontSize: 16),
+                                          'Verify & Register',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            FutureBuilder<bool>(
-                              future: OTPService.canResendOTP(),
-                              builder: (context, snapshot) {
-                                final canResend = snapshot.data ?? false;
-
-                                return ElevatedButton(
-                                  onPressed: canResend && !_isSendingOTP
-                                      ? _sendOTP
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: canResend
-                                        ? AppColors.primary
-                                        : Colors.grey,
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: _isSendingOTP ? null : _sendOTP,
+                                child: const Text(
+                                  'Resend OTP',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    decoration: TextDecoration.underline,
                                   ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 16.0,
-                                    ),
-                                    child: Icon(Icons.refresh),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      const SizedBox(height: 40),
+                    ],
                   ),
-                ],
-                const SizedBox(height: 16),
-                BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, state) {
-                    if (state is AuthLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    return const SizedBox();
-                  },
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Sudah punya akun?'),
-                    TextButton(
-                      onPressed: () => context.push('/login'),
-                      child: const Text('Login'),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

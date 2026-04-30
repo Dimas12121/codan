@@ -199,6 +199,7 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
@@ -212,80 +213,106 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
             );
           }
         },
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF5B4FD8), Color(0xFF3D3B8F)],
-            ),
-          ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 40),
-                    // Back Button
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: GestureDetector(
-                        onTap: () => context.pop(),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
+        child: Column(
+          children: [
+            // Top Section - Branding & Back Button
+            Expanded(
+              flex: 3,
+              child: Container(
+                color: Colors.white,
+                child: SafeArea(
+                  child: Stack(
+                    children: [
+                      // Back Button
+                      Positioned(
+                        top: 10,
+                        left: 16,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.black),
+                          onPressed: () => context.pop(),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                    // Title
+                      // Logo
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/splash_logo.png',
+                              width: 150,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Text(
+                                    'CODan',
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF2B37D4),
+                                    ),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Bottom Section - Phone/OTP Form
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2B37D4),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                     Text(
-                      'Login dengan Nomor Telepon',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                      _showOTPField ? 'Verifikasi OTP' : 'Login via WhatsApp',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Masukkan nomor WhatsApp Anda',
+                    Text(
+                      _showOTPField
+                          ? 'Masukkan kode yang dikirim ke $_maskedPhone'
+                          : 'Masukkan nomor WhatsApp Anda untuk masuk',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: const TextStyle(color: Colors.white70, fontSize: 14),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 32),
                     if (!_showOTPField)
                       Form(
                         key: _formKey,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Phone Field
                             TextFormField(
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: 'Nomor WhatsApp (08xxxxxxxxxx)',
-                                hintStyle: const TextStyle(
-                                  color: Colors.white70,
-                                ),
+                                hintStyle: const TextStyle(color: Colors.white70),
                                 filled: true,
                                 fillColor: Colors.white.withValues(alpha: 0.1),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Colors.white30,
-                                  ),
+                                  borderSide: const BorderSide(color: Colors.white30),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Colors.white30,
-                                  ),
+                                  borderSide: const BorderSide(color: Colors.white30),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -293,10 +320,6 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                                     color: Colors.white,
                                     width: 2,
                                   ),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
                                 ),
                               ),
                               validator: (value) {
@@ -310,95 +333,46 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                               },
                             ),
                             const SizedBox(height: 24),
-                            // Send OTP Button
-                            ElevatedButton(
-                              onPressed: _isSendingOTP ? null : _sendOTP,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isSendingOTP ? null : _sendOTP,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF2B37D4),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: _isSendingOTP
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              AppColors.primary,
-                                            ),
-                                      ),
-                                    )
-                                  : const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.message),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Kirim OTP via WhatsApp',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                child: _isSendingOTP
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            Color(0xFF2B37D4),
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      )
+                                    : const Text(
+                                        'Kirim OTP',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    if (_showOTPField)
+                      )
+                    else
                       Form(
                         key: _otpFormKey,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // OTP Success Card
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.green.withValues(alpha: 0.5),
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  const Row(
-                                    children: [
-                                      Icon(
-                                        Icons.check_circle,
-                                        color: Colors.green,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'OTP Terkirim',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Kode OTP telah dikirim ke $_maskedPhone',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.green),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // OTP Input
                             TextFormField(
                               controller: _otpController,
                               keyboardType: TextInputType.number,
@@ -419,26 +393,7 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                                 fillColor: Colors.white.withValues(alpha: 0.1),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Colors.white30,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Colors.white30,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Colors.white,
-                                    width: 2,
-                                  ),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                  borderSide: const BorderSide(color: Colors.white30),
                                 ),
                               ),
                               maxLength: 6,
@@ -453,81 +408,57 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                               },
                             ),
                             const SizedBox(height: 24),
-                            // Verify Button
                             BlocBuilder<AuthBloc, AuthState>(
                               builder: (context, state) {
                                 final isLoading =
                                     state is AuthLoading || _isVerifyingOTP;
-                                return ElevatedButton(
-                                  onPressed: isLoading ? null : _verifyOTP,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: AppColors.primary,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
+                                return SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: isLoading ? null : _verifyOTP,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: const Color(0xFF2B37D4),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
                                     ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                    child: isLoading
+                                        ? const SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                Color(0xFF2B37D4),
+                                              ),
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Verifikasi & Masuk',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                   ),
-                                  child: isLoading
-                                      ? const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                  AppColors.primary,
-                                                ),
-                                          ),
-                                        )
-                                      : const Text(
-                                          'Verifikasi OTP',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
                                 );
                               },
                             ),
                             const SizedBox(height: 16),
-                            // Resend Button
-                            FutureBuilder<bool>(
-                              future: OTPService.canResendOTP(),
-                              builder: (context, snapshot) {
-                                final canResend = snapshot.data ?? false;
-
-                                return OutlinedButton(
-                                  onPressed: canResend && !_isSendingOTP
-                                      ? _sendOTP
-                                      : null,
-                                  style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                      color: canResend
-                                          ? Colors.white
-                                          : Colors.white30,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    canResend
-                                        ? 'Kirim Ulang OTP'
-                                        : 'Tunggu untuk mengirim ulang',
-                                    style: TextStyle(
-                                      color: canResend
-                                          ? Colors.white
-                                          : Colors.white70,
-                                    ),
-                                  ),
-                                );
-                              },
+                            TextButton(
+                              onPressed: _isSendingOTP ? null : _sendOTP,
+                              child: const Text(
+                                'Kirim Ulang OTP',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -537,7 +468,7 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
