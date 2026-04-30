@@ -57,5 +57,6 @@ class AppConstants {
   static const verifyOtpEndpoint = '/verify-otp';
   static const checkPhoneEndpoint = '/check-phone';
   static const updatePhoneEndpoint = '/update-phone';
+  static const updateProfileEndpoint = '/profile/update';
 }
  

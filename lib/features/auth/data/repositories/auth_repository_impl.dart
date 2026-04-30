@@ -33,12 +33,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<User> register(String name, String email, String password, {String role = 'buyer'}) async {
-    // For backward compatibility, use registerWithPhone with empty phone
+  Future<User> register(String name, String email, String password, String phone, {String role = 'buyer'}) async {
     return await registerWithPhone(
       name: name,
       email: email,
-      phone: '',
+      phone: phone,
       password: password,
       role: role,
     );
@@ -184,5 +183,17 @@ class AuthRepositoryImpl implements AuthRepository {
     required String otp,
   }) async {
     return await remoteDataSource.updatePhone(phone: phone, otp: otp);
+  }
+
+  @override
+  Future<User> updateProfile(Map<String, dynamic> data) async {
+    final apiResponse = await remoteDataSource.updateProfile(data);
+    if (apiResponse.success) {
+      final userData = apiResponse.data;
+      if (userData == null) throw 'User data not found in response';
+      return User.fromJson(userData);
+    } else {
+      throw apiResponse.message;
+    }
   }
 }

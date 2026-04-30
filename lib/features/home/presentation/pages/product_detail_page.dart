@@ -55,7 +55,7 @@ class ProductDetailPage extends StatelessWidget {
                           const SizedBox(width: 16),
                           _buildStatItem(Icons.visibility_outlined, '${product.views} dilihat'),
                           const SizedBox(width: 16),
-                          _buildStatItem(Icons.chat_bubble_outline_rounded, product.messages),
+                          _buildStatItem(Icons.chat_bubble_outline_rounded, '${product.messages} pesan'),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -120,9 +120,9 @@ class ProductDetailPage extends StatelessWidget {
       children: [
         Hero(
           tag: 'product_image_${product.id}',
-          child: product.imageUrl.startsWith('http')
+          child: (product.imageUrl?.isNotEmpty ?? false)
               ? Image.network(
-                  product.imageUrl,
+                  product.imageUrl!,
                   width: double.infinity,
                   height: 400,
                   fit: BoxFit.cover,
@@ -134,7 +134,7 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                 )
               : Image.asset(
-                  product.imageUrl,
+                  product.imageUrl!,
                   width: double.infinity,
                   height: 400,
                   fit: BoxFit.cover,
@@ -258,8 +258,8 @@ class ProductDetailPage extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 25,
-            backgroundImage: NetworkImage(product.seller.avatarUrl),
-          ),
+            backgroundImage: NetworkImage(product.seller.avatarUrl!),
+            ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

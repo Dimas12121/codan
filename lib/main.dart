@@ -1,3 +1,10 @@
+import 'features/auth/auth.dart';
+import 'features/chat/chat.dart';
+import 'features/notification/notification.dart';
+import 'features/offer/offer.dart';
+import 'features/product/product.dart';
+import 'features/wishlist/wishlist.dart';
+import 'features/search/presentation/bloc/search_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/api/api_client.dart';
@@ -5,10 +12,6 @@ import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 import 'core/config/environment.dart';
-import 'features/auth/data/datasources/auth_local_data_source.dart';
-import 'features/auth/data/datasources/auth_remote_data_source.dart';
-import 'features/auth/data/repositories/auth_repository_impl.dart';
-import 'features/auth/presentation/bloc/auth_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,8 +36,36 @@ void main() async {
 
   final authBloc = AuthBloc(authRepository: authRepository);
 
+  final chatRemoteDataSource = ChatRemoteDataSourceImpl(apiClient: apiClient);
+  final chatRepository = ChatRepositoryImpl(remoteDataSource: chatRemoteDataSource);
+  final chatBloc = ChatBloc(repository: chatRepository);
+
+  final productRemoteDataSource = ProductRemoteDataSourceImpl(apiClient: apiClient);
+  final productRepository = ProductRepositoryImpl(remoteDataSource: productRemoteDataSource);
+  final productBloc = ProductBloc(repository: productRepository);
+
+  final wishlistRemoteDataSource = WishlistRemoteDataSourceImpl(apiClient: apiClient);
+  final wishlistRepository = WishlistRepositoryImpl(remoteDataSource: wishlistRemoteDataSource);
+  final wishlistBloc = WishlistBloc(repository: wishlistRepository);
+
+  final notificationRemoteDataSource = NotificationRemoteDataSourceImpl(apiClient: apiClient);
+  final notificationRepository = NotificationRepositoryImpl(remoteDataSource: notificationRemoteDataSource);
+  final notificationBloc = NotificationBloc(repository: notificationRepository);
+
+  final offerRemoteDataSource = OfferRemoteDataSourceImpl(apiClient: apiClient);
+  final offerRepository = OfferRepositoryImpl(remoteDataSource: offerRemoteDataSource);
+  final offerBloc = OfferBloc(repository: offerRepository);
+
+  final searchBloc = SearchBloc(repository: productRepository);
+
   runApp(MyApp(
     authBloc: authBloc,
+    chatBloc: chatBloc,
+    productBloc: productBloc,
+    wishlistBloc: wishlistBloc,
+    notificationBloc: notificationBloc,
+    offerBloc: offerBloc,
+    searchBloc: searchBloc,
     apiClient: apiClient,
     authRepository: authRepository,
   ));
@@ -42,12 +73,24 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final AuthBloc authBloc;
+  final ChatBloc chatBloc;
+  final ProductBloc productBloc;
+  final WishlistBloc wishlistBloc;
+  final NotificationBloc notificationBloc;
+  final OfferBloc offerBloc;
+  final SearchBloc searchBloc;
   final ApiClient apiClient;
   final AuthRepositoryImpl authRepository;
 
   const MyApp({
     super.key,
     required this.authBloc,
+    required this.chatBloc,
+    required this.productBloc,
+    required this.wishlistBloc,
+    required this.notificationBloc,
+    required this.offerBloc,
+    required this.searchBloc,
     required this.apiClient,
     required this.authRepository,
   });
@@ -59,8 +102,16 @@ class MyApp extends StatelessWidget {
         RepositoryProvider<ApiClient>.value(value: apiClient),
         RepositoryProvider<AuthRepositoryImpl>.value(value: authRepository),
       ],
-      child: BlocProvider.value(
-        value: authBloc,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: authBloc),
+          BlocProvider.value(value: chatBloc),
+          BlocProvider.value(value: productBloc),
+          BlocProvider.value(value: wishlistBloc),
+          BlocProvider.value(value: notificationBloc),
+          BlocProvider.value(value: offerBloc),
+          BlocProvider.value(value: searchBloc),
+        ],
         child: MaterialApp.router(
           title: AppConstants.appName,
           debugShowCheckedModeBanner: false,

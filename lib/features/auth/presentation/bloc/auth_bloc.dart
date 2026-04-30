@@ -13,6 +13,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRegisterWithPhoneRequested>(_onAuthRegisterWithPhoneRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
     on<AuthLoginPhoneRequested>(_onAuthLoginPhoneRequested);
+    on<AuthUpdateProfileRequested>(_onAuthUpdateProfileRequested);
   }
 
   Future<void> _onAuthCheckRequested(
@@ -51,6 +52,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         event.name,
         event.email,
         event.password,
+        event.phone,
         role: event.role,
       );
       emit(Authenticated(user));
@@ -101,5 +103,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     await authRepository.logout();
     emit(Unauthenticated());
+  }
+
+  Future<void> _onAuthUpdateProfileRequested(
+    AuthUpdateProfileRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    // We don't emit AuthLoading here to avoid flickering the whole screen
+    // Instead, we can rely on local UI state for loading if needed,
+    // or just let the update happen.
+    try {
+      final user = await authRepository.updateProfile(event.data);
+      emit(Authenticated(user));
+    } catch (e) {
+      emit(AuthFailure(e.toString()));
+    }
   }
 }

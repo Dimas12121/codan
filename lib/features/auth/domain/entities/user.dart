@@ -7,6 +7,9 @@ class User extends Equatable {
   final String phone;
   final bool isPhoneVerified;
   final String? profilePhoto;
+  final String? location;
+  final String? bio;
+  final String? role;
 
   const User({
     required this.id,
@@ -15,17 +18,25 @@ class User extends Equatable {
     required this.phone,
     this.isPhoneVerified = false,
     this.profilePhoto,
+    this.location,
+    this.bio,
+    this.role,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
       phone: json['phone'] ?? json['telp'] ?? '',
-      isPhoneVerified:
-          json['is_phone_verified'] ?? json['phone_verified'] ?? false,
-      profilePhoto: json['profile_photo_url'] ?? json['image'],
+      isPhoneVerified: json['is_phone_verified'] == 1 ||
+          json['is_phone_verified'] == true ||
+          json['phone_verified'] == 1 ||
+          json['phone_verified'] == true,
+      profilePhoto: json['profile_photo_url'] ?? json['image'] ?? json['avatar'],
+      location: json['location'],
+      bio: json['bio'],
+      role: json['role'],
     );
   }
 
@@ -37,6 +48,9 @@ class User extends Equatable {
       'phone': phone,
       'is_phone_verified': isPhoneVerified,
       'profile_photo_url': profilePhoto,
+      'location': location,
+      'bio': bio,
+      'role': role,
     };
   }
 
@@ -48,5 +62,8 @@ class User extends Equatable {
     phone,
     isPhoneVerified,
     profilePhoto,
+    location,
+    bio,
+    role,
   ];
 }

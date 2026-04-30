@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../product/presentation/bloc/product_bloc.dart';
+import '../../../product/presentation/bloc/product_event.dart';
+import '../../../product/presentation/bloc/product_state.dart';
+import '../../../product/domain/entities/product.dart';
 
 class SellPage extends StatefulWidget {
   const SellPage({super.key});
@@ -10,299 +15,215 @@ class SellPage extends StatefulWidget {
 }
 
 class _SellPageState extends State<SellPage> {
-  String _selectedCategory = '';
-  String _selectedCondition = '';
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProductBloc>().add(const LoadMyProducts());
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.pop(context),
+        title: const Text(
+          'Kelola Jualan',
+          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
         ),
-        title: null, // Title is in the body
         backgroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () => context.push('/add-product'),
+            icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              const Text(
-                'Jual Barang',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+      body: BlocConsumer<ProductBloc, ProductState>(
+        listener: (context, state) {
+          if (state is ProductOperationSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+            context.read<ProductBloc>().add(const LoadMyProducts());
+          }
+        },
+        builder: (context, state) {
+          if (state is ProductLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ProductLoaded) {
+            final products = state.products;
+            if (products.isEmpty) {
+              return _buildEmptyState();
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(20),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                return _buildProductItem(products[index]);
+              },
+            );
+          } else if (state is ProductError) {
+            return Center(child: Text('Error: ${state.message}'));
+          }
+          return const Center(child: Text('Memuat data...'));
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/add-product'),
+        label: const Text('Jual Barang Baru'),
+        icon: const Icon(Icons.add),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          const Text(
+            'Belum ada barang jualan',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Mulai jualan barangmu sekarang!',
+            style: TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => context.push('/add-product'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Jual Sekarang'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductItem(Product product) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: product.imageUrl != null
+                ? Image.network(
+                    product.imageUrl!,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  )
+                : Container(
+                    width: 80,
+                    height: 80,
+                    color: Colors.grey.shade100,
+                    child: const Icon(Icons.image_not_supported_outlined, color: Colors.grey),
+                  ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Foto yang bagus bikin cepat laku!',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
+                const SizedBox(height: 4),
+                Text(
+                  'Rp ${product.price.toStringAsFixed(0)}',
+                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
                 ),
-              ),
-              const SizedBox(height: 32),
-
-              // Foto Produk
-              const Text(
-                'Foto Produk',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              _buildPhotoPicker(),
-              const SizedBox(height: 24),
-
-              // Judul Produk
-              _buildLabel('Judul Produk'),
-              _buildTextField(hint: 'Contoh: MacBook Air M1 2020 Fullset'),
-              const SizedBox(height: 20),
-
-              // Harga
-              _buildLabel('Harga (Rp)'),
-              _buildTextField(hint: 'Contoh: 8500000', keyboardType: TextInputType.number),
-              const SizedBox(height: 20),
-
-              // Deskripsi Produk
-              _buildLabel('Deskripsi Produk'),
-              _buildTextField(
-                hint: 'Ceritakan kondisi barang, kelengkapan, dll...',
-                maxLines: 4,
-              ),
-              const SizedBox(height: 24),
-
-              // Kategori
-              const Text(
-                'Kategori',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
+                const SizedBox(height: 8),
+                Row(
                   children: [
-                    _buildCategoryChip('Buku', Icons.book_rounded),
-                    _buildCategoryChip('Elektronik', Icons.laptop_rounded),
-                    _buildCategoryChip('Fashion', Icons.checkroom_rounded),
-                    _buildCategoryChip('Kendaraan', Icons.directions_car_rounded),
-                    _buildCategoryChip('Gaming', Icons.sports_esports_rounded),
-                    _buildCategoryChip('Lainnya', Icons.more_horiz_rounded),
+                    _buildActionButton(
+                      icon: Icons.edit_outlined,
+                      label: 'Edit',
+                      color: Colors.blue,
+                      onTap: () => context.push('/edit-product', extra: product),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildActionButton(
+                      icon: Icons.delete_outline,
+                      label: 'Hapus',
+                      color: Colors.red,
+                      onTap: () => _confirmDelete(product),
+                    ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
-
-              // Kondisi
-              const Text(
-                'Kondisi',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  _buildConditionChip('Baru'),
-                  _buildConditionChip('Seperti Baru'),
-                  _buildConditionChip('Bekas - Baik'),
-                  _buildConditionChip('Bekas - Layak Pakai'),
-                ],
-              ),
-              const SizedBox(height: 40),
-
-              // Publish Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Logic to publish
-                  },
-                  icon: const Icon(Icons.publish_rounded, size: 20),
-                  label: const Text(
-                    'Publikasikan',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFC5BFFF), // Light purple from design
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 100), // Bottom padding
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhotoPicker() {
-    return SizedBox(
-      width: 100,
-      height: 100,
-      child: CustomPaint(
-        painter: DashedRectPainter(color: AppColors.primary),
-        child: InkWell(
-          onTap: () {
-            // Pick image logic
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_a_photo_outlined, color: AppColors.primary, size: 30),
-              const SizedBox(height: 4),
-              Text(
-                'Tambah Foto',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildTextField({required String hint, int maxLines = 1, TextInputType keyboardType = TextInputType.text}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
-      child: TextField(
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryChip(String label, IconData icon) {
-    final isSelected = _selectedCategory == label;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedCategory = label),
-      child: Container(
-        margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: isSelected ? AppColors.primary : Colors.grey.shade100),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isSelected ? Colors.white : AppColors.primary,
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? Colors.white : AppColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildConditionChip(String label) {
-    final isSelected = _selectedCondition == label;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedCondition = label),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: isSelected ? AppColors.primary : Colors.grey.shade100),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            color: isSelected ? Colors.white : AppColors.textPrimary,
           ),
-        ),
+        ],
       ),
     );
   }
-}
 
-class DashedRectPainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-  final double gap;
-
-  DashedRectPainter({
-    required this.color,
-    this.strokeWidth = 1.5,
-    this.gap = 5,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = color.withValues(alpha: 0.5)
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    final RRect rRect = RRect.fromLTRBR(0, 0, size.width, size.height, const Radius.circular(15));
-    final Path path = Path()..addRRect(rRect);
-
-    final Path dashPath = Path();
-    double distance = 0.0;
-    for (final PathMetric metric in path.computeMetrics()) {
-      while (distance < metric.length) {
-        dashPath.addPath(
-          metric.extractPath(distance, distance + gap),
-          Offset.zero,
-        );
-        distance += gap * 2;
-      }
-      distance = 0.0;
-    }
-    canvas.drawPath(dashPath, paint);
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 
-  @override
-  bool shouldRepaint(DashedRectPainter oldDelegate) => false;
+  void _confirmDelete(Product product) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Produk?'),
+        content: Text('Apakah Anda yakin ingin menghapus "${product.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<ProductBloc>().add(DeleteProductEvent(product.id));
+            },
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 }
 

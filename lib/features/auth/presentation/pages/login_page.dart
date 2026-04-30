@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 
@@ -22,12 +22,7 @@ class _LoginPageState extends State<LoginPage> {
           if (state is Authenticated) {
             context.go('/');
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+            AppSnackBar.showError(context, state.message);
           }
         },
         child: Column(
@@ -133,12 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // TODO: Implement Google login
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Google login coming soon'),
-                          ),
-                        );
+                        AppSnackBar.showInfo(context, 'Login via Google belum tersedia');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -180,11 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                   // Continue with Email Button (Text button or outline)
                   TextButton(
                     onPressed: () {
-                      // Show email/password fields or navigate to a specialized email login page
-                      // For now, let's keep it simple and just show a message or navigate
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Email login coming soon')),
-                      );
+                      context.push('/login-email');
                     },
                     child: const Text(
                       'Login with Email',

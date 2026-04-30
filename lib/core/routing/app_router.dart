@@ -1,21 +1,15 @@
-import 'package:codan/features/auth/presentation/pages/register_with_otp_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../features/auth/presentation/pages/login_page.dart';
-import '../../features/auth/presentation/pages/register_page.dart';
-import '../../features/auth/presentation/pages/login_phone_page.dart';
-import '../../features/auth/presentation/pages/profile_page.dart';
-import '../../features/auth/presentation/pages/verify_otp_page.dart';
-import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/auth/presentation/bloc/auth_state.dart';
-import '../../features/home/presentation/pages/main_page.dart';
-import '../../features/home/presentation/pages/category_selection_page.dart';
-import '../../features/home/presentation/pages/marketplace_page.dart';
+import '../../features/auth/auth.dart';
+import '../../features/home/home.dart';
 import '../../features/search/presentation/pages/search_page.dart';
-import '../../features/chat/presentation/pages/chat_detail_page.dart';
+import '../../features/chat/chat.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/splash/presentation/pages/splash2_page.dart';
+import '../../features/product/product.dart';
+import '../../features/wishlist/wishlist.dart';
+import '../../features/notification/notification.dart';
 
 class AppRouter {
   static GoRouter router(AuthBloc authBloc) => GoRouter(
@@ -25,6 +19,7 @@ class AppRouter {
       final authState = authBloc.state;
       final bool isAuthPage =
           state.matchedLocation == '/login' ||
+          state.matchedLocation == '/login-email' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/login-phone' ||
           state.matchedLocation == '/register-with-otp' ||
@@ -53,6 +48,10 @@ class AppRouter {
         builder: (context, state) => const Splash2Page(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(
+        path: '/login-email',
+        builder: (context, state) => const LoginEmailPage(),
+      ),
       GoRoute(
         path: '/login-phone',
         builder: (context, state) => const LoginPhonePage(),
@@ -96,9 +95,32 @@ class AppRouter {
       GoRoute(
         path: '/chat/detail',
         builder: (context, state) {
-          final chatItem = state.extra as Map<String, String>;
+          final chatItem = state.extra as Map<String, dynamic>;
           return ChatDetailPage(chatItem: chatItem);
         },
+      ),
+      GoRoute(
+        path: '/add-product',
+        builder: (context, state) => const AddEditProductPage(),
+      ),
+      GoRoute(
+        path: '/edit-product',
+        builder: (context, state) {
+          final product = state.extra as Product;
+          return AddEditProductPage(product: product);
+        },
+      ),
+      GoRoute(
+        path: '/wishlist',
+        builder: (context, state) => const WishlistPage(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationPage(),
+      ),
+      GoRoute(
+        path: '/my-products',
+        builder: (context, state) => const MyProductsPage(),
       ),
     ],
   );

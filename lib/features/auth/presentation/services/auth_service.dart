@@ -32,8 +32,9 @@ class AuthService {
     String name,
     String email,
     String password,
+    String phone,
   ) {
-    context.read<AuthBloc>().add(AuthRegisterRequested(name, email, password));
+    context.read<AuthBloc>().add(AuthRegisterRequested(name, email, password, phone));
   }
 
   // Logout helper

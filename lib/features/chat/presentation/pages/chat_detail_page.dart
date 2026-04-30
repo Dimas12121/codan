@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
+import '../bloc/chat_bloc.dart';
+import '../bloc/chat_event.dart';
+import '../bloc/chat_state.dart';
 
 class ChatDetailPage extends StatefulWidget {
-  final Map<String, String> chatItem;
+  final Map<String, dynamic> chatItem;
 
   const ChatDetailPage({super.key, required this.chatItem});
 
@@ -13,6 +19,57 @@ class ChatDetailPage extends StatefulWidget {
 
 class _ChatDetailPageState extends State<ChatDetailPage> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  Timer? _pollingTimer;
+
+  int get produkId => widget.chatItem['produk_id'] as int;
+  int get partnerId => widget.chatItem['partner_id'] as int;
+  String get partnerName => widget.chatItem['name'] as String;
+  String get avatarUrl => widget.chatItem['avatar'] as String;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages();
+    // Simple polling for real-time feel (every 3 seconds)
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      _loadMessages();
+    });
+  }
+
+  void _loadMessages() {
+    context.read<ChatBloc>().add(LoadChatMessages(produkId, partnerId));
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  void _sendMessage() {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+
+    context.read<ChatBloc>().add(SendMessage(
+      produkId: produkId,
+      receiverId: partnerId,
+      message: text,
+    ));
+    _messageController.clear();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,16 +101,16 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundImage: widget.chatItem['avatar']!.startsWith('http')
-                  ? NetworkImage(widget.chatItem['avatar']!) as ImageProvider
-                  : AssetImage(widget.chatItem['avatar']!),
+              backgroundImage: avatarUrl.startsWith('http')
+                  ? NetworkImage(avatarUrl) as ImageProvider
+                  : AssetImage(avatarUrl),
             ),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.chatItem['name']!,
+                  partnerName,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -79,21 +136,63 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                _buildChatBubble(
-                  message: 'Ready?',
-                  time: '16.10',
-                  isMe: true,
-                ),
-                const SizedBox(height: 12),
-                _buildChatBubble(
-                  message: widget.chatItem['message']!,
-                  time: '16.10',
-                  isMe: false,
-                ),
-              ],
+            child: BlocConsumer<ChatBloc, ChatState>(
+              listener: (context, state) {
+                if (state is ChatMessagesLoaded) {
+                  // Mark as read when messages are loaded
+                  context.read<ChatBloc>().add(MarkMessagesAsRead(produkId, partnerId));
+                  // Scroll to bottom after frame renders
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollToBottom();
+                  });
+                }
+              },
+              builder: (context, state) {
+                if (state is ChatMessagesLoading) {
+                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                } else if (state is ChatMessagesError) {
+                  return Center(child: Text('Error: ${state.message}'));
+                } else if (state is ChatMessagesLoaded) {
+                  final messages = state.messages;
+                  
+                  if (messages.isEmpty) {
+                    return const Center(
+                      child: Text('Belum ada pesan. Mulai obrolan sekarang!',
+                          style: TextStyle(color: Colors.grey)),
+                    );
+                  }
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(20),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+                      final isMe = msg.senderId != partnerId; // If sender is not partner, it's me
+
+                      // Parse simple time from createdAt (assuming "YYYY-MM-DD HH:MM:SS" or similar)
+                      String timeStr = '';
+                      try {
+                        final dt = DateTime.parse(msg.createdAt).toLocal();
+                        timeStr = '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+                      } catch (_) {
+                        timeStr = '...';
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildChatBubble(
+                          message: msg.message ?? '',
+                          imagePath: msg.imagePath,
+                          time: timeStr,
+                          isMe: isMe,
+                        ),
+                      );
+                    },
+                  );
+                }
+                return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+              },
             ),
           ),
           _buildMessageInput(),
@@ -104,6 +203,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   Widget _buildChatBubble({
     required String message,
+    String? imagePath,
     required String time,
     required bool isMe,
   }) {
@@ -112,33 +212,51 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFEFEFEF),
+          color: isMe ? const Color(0xFFC7C7FF) : const Color(0xFFEFEFEF),
           borderRadius: BorderRadius.circular(8),
         ),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.7,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Column(
+          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Flexible(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 15,
+            if (imagePath != null && imagePath.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              time,
-              style: const TextStyle(
-                color: Colors.black45,
-                fontSize: 10,
+            if (message.isNotEmpty)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Flexible(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    time,
+                    style: const TextStyle(
+                      color: Colors.black45,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
               ),
-            ),
           ],
         ),
       ),
@@ -163,19 +281,22 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               child: TextField(
                 controller: _messageController,
                 decoration: const InputDecoration(
-                  hintText: 'Message',
+                  hintText: 'Ketik pesan...',
                   hintStyle: TextStyle(color: AppColors.textSecondary),
                   border: InputBorder.none,
                 ),
+                onSubmitted: (_) => _sendMessage(),
               ),
             ),
             IconButton(
               icon: const Icon(Icons.image_outlined, color: Colors.grey),
-              onPressed: () {},
+              onPressed: () {
+                AppSnackBar.showInfo(context, 'Kirim gambar segera hadir!');
+              },
             ),
             IconButton(
-              icon: const Icon(Icons.send_outlined, color: Colors.grey),
-              onPressed: () {},
+              icon: const Icon(Icons.send, color: Color(0xFF2B37D4)),
+              onPressed: _sendMessage,
             ),
           ],
         ),

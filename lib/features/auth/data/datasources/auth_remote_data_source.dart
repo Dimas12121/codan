@@ -114,7 +114,7 @@ class AuthRemoteDataSource {
         data: {
           'phone': phone,
           'otp': otp,
-          if (email != null) 'email': email,
+          'email': email,
           'purpose': purpose,
           'channel': 'whatsapp',
           'provider': 'fonnte',
@@ -144,9 +144,9 @@ class AuthRemoteDataSource {
         data: {
           'phone': phone,
           'otp': otp,
-          if (email != null) 'email': email,
+          'email': email,
           'purpose': purpose,
-        },
+        }..removeWhere((_, v) => v == null),
       );
 
       return ApiResponse<Map<String, dynamic>>.fromJson(
@@ -205,6 +205,31 @@ class AuthRemoteDataSource {
       final response = await apiClient.dio.post(
         '/refresh-token',
         data: {'refresh_token': refreshToken},
+      );
+
+      return ApiResponse<Map<String, dynamic>>.fromJson(
+        response.data,
+        (data) => Map<String, dynamic>.from(data),
+      );
+    } on DioException catch (e) {
+      throw ErrorResponse.fromDioException(e);
+    }
+  }
+  // Update profile
+  Future<ApiResponse<Map<String, dynamic>>> updateProfile(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final Map<String, dynamic> formDataMap = Map<String, dynamic>.from(data);
+      
+      if (data.containsKey('avatar') && data['avatar'] != null) {
+        formDataMap['avatar'] = await MultipartFile.fromFile(data['avatar']);
+      }
+
+      final formData = FormData.fromMap(formDataMap);
+      final response = await apiClient.dio.post(
+        AppConstants.updateProfileEndpoint,
+        data: formData,
       );
 
       return ApiResponse<Map<String, dynamic>>.fromJson(

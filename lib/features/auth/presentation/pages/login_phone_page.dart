@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 import '../services/otp_service.dart';
@@ -29,15 +29,10 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
   Future<void> _sendOTP() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final phone = _phoneController.text;
+    final phone = OTPService.formatPhoneNumber(_phoneController.text);
     if (!OTPService.isValidPhoneNumber(phone)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Nomor telepon tidak valid'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackBar.showError(context, 'Nomor HP tidak valid');
       }
       return;
     }
@@ -47,12 +42,25 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
     });
 
     try {
+      // Get repository from context
+      final authRepository = context.read<AuthRepositoryImpl>();
+
+      // Check if phone is registered first
+      final checkResponse = await authRepository.checkPhoneAvailability(phone);
+      final isAvailable = checkResponse.data?['available'] ?? true;
+      
+      if (isAvailable) {
+        if (!mounted) return;
+        AppSnackBar.showError(context, 'Nomor telepon belum terdaftar. Silakan daftar terlebih dahulu.');
+        setState(() {
+          _isSendingOTP = false;
+        });
+        return;
+      }
+
       // Generate OTP
       final otpData = OTPService.generateOTPWithExpiry();
       final otp = otpData['otp'] as String;
-
-      // Get repository from context
-      final authRepository = context.read<AuthRepositoryImpl>();
 
       // Send OTP via WhatsApp using Fonnte through backend API
       final response = await authRepository.sendOTPviaWhatsApp(
@@ -74,33 +82,16 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
             'type': 'login',
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'OTP telah dikirim ke WhatsApp ${OTPService.formatPhoneNumber(phone)}',
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AppSnackBar.showSuccess(context, 'OTP telah dikirim ke WhatsApp ${OTPService.formatPhoneNumber(phone)}');
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Gagal mengirim OTP: ${response.message}'),
-              backgroundColor: AppColors.error,
-            ),
-          );
+          AppSnackBar.showError(context, 'Gagal mengirim OTP: ${response.message}');
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackBar.showError(context, e.toString());
       }
     } finally {
       if (mounted) {
@@ -120,12 +111,7 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
           if (state is Authenticated) {
             context.go('/');
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+            AppSnackBar.showError(context, state.message);
           }
         },
         child: Column(

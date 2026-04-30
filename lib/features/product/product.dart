@@ -1,0 +1,10 @@
+export 'data/datasources/product_remote_data_source.dart';
+export 'data/repositories/product_repository_impl.dart';
+export 'domain/entities/product.dart';
+export 'domain/repositories/product_repository.dart';
+export 'presentation/bloc/product_bloc.dart';
+export 'presentation/bloc/product_event.dart';
+export 'presentation/bloc/product_state.dart';
+export 'presentation/pages/product_detail_page.dart';
+export 'presentation/pages/add_edit_product_page.dart';
+export 'presentation/pages/my_products_page.dart';

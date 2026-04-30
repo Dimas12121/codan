@@ -148,8 +148,6 @@ class OTPService {
       return '+62${digits.substring(1)}';
     } else if (digits.startsWith('62')) {
       return '+$digits';
-    } else if (digits.startsWith('+62')) {
-      return digits;
     } else {
       return '+62$digits';
     }
@@ -166,8 +164,6 @@ class OTPService {
       return digits.length >= 10 && digits.length <= 13;
     } else if (digits.startsWith('62')) {
       return digits.length >= 11 && digits.length <= 14;
-    } else if (digits.startsWith('+62')) {
-      return digits.length >= 12 && digits.length <= 15;
     }
 
     return false;

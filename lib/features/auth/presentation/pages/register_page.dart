@@ -1,8 +1,9 @@
+import 'package:codan/features/auth/presentation/services/otp_service.dart';
 import 'package:codan/features/auth/presentation/widgets/auth_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -42,12 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
           if (state is Authenticated) {
             context.go('/');
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+            AppSnackBar.showError(context, state.message);
           }
         },
         child: Column(
@@ -187,7 +183,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String>(
-                          value: _selectedRole,
+                          initialValue: _selectedRole,
                           dropdownColor: const Color(0xFF2B37D4),
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
@@ -244,6 +240,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   _nameController.text,
                                                   _emailController.text,
                                                   _passwordController.text,
+                                                  OTPService.formatPhoneNumber(_phoneController.text),
                                                   role: _selectedRole,
                                                 ),
                                               );

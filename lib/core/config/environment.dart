@@ -44,7 +44,15 @@ class EnvironmentConfig {
     final envBaseUrl = _envVars?['API_BASE_URL'] ?? 
                        _envVars?['API_BASE_URL_${_environment.name.toUpperCase()}'];
     
-    if (envBaseUrl != null) return envBaseUrl;
+    if (envBaseUrl != null) {
+      // If running on Android emulator and baseUrl is localhost, use 10.0.2.2
+      if (!kIsWeb && 
+          defaultTargetPlatform == TargetPlatform.android && 
+          (envBaseUrl.contains('127.0.0.1') || envBaseUrl.contains('localhost'))) {
+        return envBaseUrl.replaceAll('127.0.0.1', '10.0.2.2').replaceAll('localhost', '10.0.2.2');
+      }
+      return envBaseUrl;
+    }
 
     // Priority 2: Hardcoded defaults based on environment and platform
     return switch (_environment) {

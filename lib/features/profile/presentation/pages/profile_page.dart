@@ -33,14 +33,14 @@ class ProfilePage extends StatelessWidget {
                     title: 'Transaksi',
                     items: [
                       _buildListTile(Icons.shopping_bag_outlined, 'Riwayat Transaksi', isLast: false),
-                      _buildListTile(Icons.favorite_border, 'Wishlist', isLast: true),
+                      _buildListTile(Icons.favorite_border, 'Wishlist', isLast: true, onTap: () => context.push('/wishlist')),
                     ],
                   ),
                   const SizedBox(height: 24),
                   _buildSection(
                     title: 'Jual & Sewa',
                     items: [
-                      _buildListTile(Icons.storefront_outlined, 'Produk Saya', isLast: false),
+                      _buildListTile(Icons.storefront_outlined, 'Produk Saya', isLast: false, onTap: () => context.push('/my-products')),
                       _buildListTile(Icons.swap_horiz, 'Sewaan Saya', isLast: false),
                       _buildListTile(Icons.star_outline, 'Ulasan & Rating', isLast: true),
                     ],

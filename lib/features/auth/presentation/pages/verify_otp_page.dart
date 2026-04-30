@@ -7,7 +7,7 @@ import '../bloc/auth_state.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
 
 class VerifyOTPPage extends StatefulWidget {
   final String destination; // email or phone number
@@ -77,19 +77,19 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
       );
 
       if (response.success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('OTP sent successfully')),
-        );
+        if (mounted) {
+          AppSnackBar.showSuccess(context, 'OTP sent successfully');
+        }
         _startResendTimer();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to resend: ${response.message}'), backgroundColor: AppColors.error),
-        );
+        if (mounted) {
+          AppSnackBar.showError(context, 'Failed to resend: ${response.message}');
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
-      );
+      if (mounted) {
+        AppSnackBar.showError(context, 'Error: $e');
+      }
     }
   }
 
@@ -141,12 +141,7 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
           if (state is Authenticated) {
             context.go('/');
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+            AppSnackBar.showError(context, state.message);
           }
         },
         child: Stack(
@@ -163,6 +158,15 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
                   child: Container(color: const Color(0xFF1A1A2E)),
                 ),
               ],
+            ),
+            // Back Button
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 16,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => context.pop(),
+              ),
             ),
             // Main Card
             Center(
@@ -202,7 +206,7 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
                     const SizedBox(height: 32),
                     // Title
                     const Text(
-                      'Enter Verification Code',
+                      'Masukkan Kode Verifikasi',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -211,7 +215,7 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Enter code that we have sent to your ${widget.destination.contains('@') ? 'email' : 'WhatsApp'}',
+                      'Masukkan kode 6-digit yang telah kami kirimkan ke ${widget.destination.contains('@') ? 'email' : 'nomor WhatsApp'} Anda',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 12,
@@ -299,7 +303,7 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
                                     ),
                                   )
                                 : const Text(
-                                    'VERIFY',
+                                    'VERIFIKASI',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -316,13 +320,13 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          "Didn't receive code? ",
+                          "Tidak menerima kode? ",
                           style: TextStyle(fontSize: 14, color: Colors.black54),
                         ),
                         TextButton(
                           onPressed: _canResend ? _resendOTP : null,
                           child: Text(
-                            _canResend ? 'Resend' : 'Resend in ${_resendSeconds}s',
+                            _canResend ? 'Kirim Ulang' : 'Kirim Ulang dalam ${_resendSeconds}s',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -337,9 +341,9 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'By continuing, you agree to our Terms of Service and Privacy Policy.',
+                        'Dengan melanjutkan, Anda setuju dengan Syarat & Ketentuan serta Kebijakan Privasi kami.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 10,
                           color: Colors.black45,
                           height: 1.4,

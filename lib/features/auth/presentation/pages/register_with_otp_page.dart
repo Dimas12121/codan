@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -44,15 +44,10 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
   Future<void> _sendOTP() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final phone = _phoneController.text;
+    final phone = OTPService.formatPhoneNumber(_phoneController.text);
     if (!OTPService.isValidPhoneNumber(phone)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Nomor telepon tidak valid'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackBar.showError(context, 'Harap lengkapi semua data');
       }
       return;
     }
@@ -96,33 +91,16 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
             },
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'OTP telah dikirim ke WhatsApp ${OTPService.formatPhoneNumber(phone)}',
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AppSnackBar.showSuccess(context, 'OTP telah dikirim ke WhatsApp ${OTPService.formatPhoneNumber(phone)}');
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Gagal mengirim OTP: ${response.message}'),
-              backgroundColor: AppColors.error,
-            ),
-          );
+          AppSnackBar.showError(context, 'Gagal mengirim OTP: ${response.message}');
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackBar.showError(context, 'Error: $e');
       }
     } finally {
       if (mounted) {
@@ -140,12 +118,7 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
 
     if (otp != _generatedOTP) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('OTP tidak valid'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackBar.showError(context, 'Masukkan OTP yang Anda terima');
       }
       return;
     }
@@ -173,21 +146,13 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
         // OTP verified, proceed with registration
         _registerUser();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Verifikasi OTP gagal: ${response.message}'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        if (mounted) {
+          AppSnackBar.showError(context, 'Verifikasi OTP gagal: ${response.message}');
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackBar.showError(context, 'Error: $e');
       }
     } finally {
       if (mounted) {
@@ -205,13 +170,12 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
       AuthRegisterWithPhoneRequested(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
+        phone: OTPService.formatPhoneNumber(_phoneController.text.trim()),
         password: _passwordController.text,
         role: _selectedRole,
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,12 +185,7 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
           if (state is Authenticated) {
             context.go('/');
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+            AppSnackBar.showError(context, state.message);
           }
         },
         child: Column(

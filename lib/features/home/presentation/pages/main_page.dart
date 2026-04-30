@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../widgets/app_bottom_nav.dart';
 import 'home_page.dart';
@@ -35,10 +36,7 @@ class _MainPageState extends State<MainPage> {
         width: 75,
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SellPage()),
-            );
+            context.push('/add-product');
           },
           backgroundColor: AppColors.navbarActive,
           shape: const CircleBorder(),
