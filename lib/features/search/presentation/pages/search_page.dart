@@ -40,7 +40,7 @@ class SearchPage extends StatelessWidget {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.searchBarBackground.withOpacity(0.8),
+                        color: AppColors.searchBarBackground.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: const TextField(

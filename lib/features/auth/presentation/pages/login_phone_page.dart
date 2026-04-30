@@ -3,11 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../services/otp_service.dart';
-import '../../data/datasources/auth_remote_data_source.dart';
-import '../../../../core/api/api_client.dart';
+import '../../data/repositories/auth_repository_impl.dart';
 
 class LoginPhonePage extends StatefulWidget {
   const LoginPhonePage({super.key});
@@ -18,19 +16,13 @@ class LoginPhonePage extends StatefulWidget {
 
 class _LoginPhonePageState extends State<LoginPhonePage> {
   final _phoneController = TextEditingController();
-  final _otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _otpFormKey = GlobalKey<FormState>();
 
-  bool _showOTPField = false;
   bool _isSendingOTP = false;
-  bool _isVerifyingOTP = false;
-  String _maskedPhone = '';
 
   @override
   void dispose() {
     _phoneController.dispose();
-    _otpController.dispose();
     super.dispose();
   }
 
@@ -59,12 +51,11 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
       final otpData = OTPService.generateOTPWithExpiry();
       final otp = otpData['otp'] as String;
 
-      // Get API client from context
-      final apiClient = context.read<ApiClient>();
-      final authRemoteDataSource = AuthRemoteDataSource(apiClient);
+      // Get repository from context
+      final authRepository = context.read<AuthRepositoryImpl>();
 
       // Send OTP via WhatsApp using Fonnte through backend API
-      final response = await authRemoteDataSource.sendOTPviaWhatsApp(
+      final response = await authRepository.sendOTPviaWhatsApp(
         phone: phone,
         otp: otp,
         purpose: 'login',
@@ -78,9 +69,9 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
         await OTPService.saveResendTime();
 
         if (mounted) {
-          setState(() {
-            _showOTPField = true;
-            _maskedPhone = OTPService.maskPhoneNumber(phone);
+          context.push('/verify-otp', extra: {
+            'destination': phone,
+            'type': 'login',
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -115,82 +106,6 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
       if (mounted) {
         setState(() {
           _isSendingOTP = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _verifyOTP() async {
-    if (!_otpFormKey.currentState!.validate()) return;
-
-    setState(() {
-      _isVerifyingOTP = true;
-    });
-
-    try {
-      final phone = _phoneController.text;
-      final otp = _otpController.text;
-
-      // Cek OTP lokal dulu (expire check)
-      final otpData = await OTPService.getOTPData();
-      if (otpData == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Sesi OTP tidak ditemukan. Kirim ulang OTP.'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-        return;
-      }
-
-      if (OTPService.isOTPExpired(otpData)) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('OTP sudah kadaluarsa. Kirim ulang OTP.'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-          setState(() {
-            _showOTPField = false;
-          });
-        }
-        return;
-      }
-
-      // Cek OTP lokal
-      final savedOtp = otpData['otp']?.toString();
-      if (savedOtp == null || savedOtp != otp) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('OTP tidak valid'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-        return;
-      }
-
-      // Verifikasi OTP ke backend lalu login
-      if (mounted) {
-        context.read<AuthBloc>().add(AuthLoginPhoneRequested(phone, otp));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isVerifyingOTP = false;
         });
       }
     }
@@ -274,9 +189,9 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      _showOTPField ? 'Verifikasi OTP' : 'Login via WhatsApp',
-                      style: const TextStyle(
+                    const Text(
+                      'Login via WhatsApp',
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -284,15 +199,12 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      _showOTPField
-                          ? 'Masukkan kode yang dikirim ke $_maskedPhone'
-                          : 'Masukkan nomor WhatsApp Anda untuk masuk',
+                    const Text(
+                      'Masukkan nomor WhatsApp Anda untuk masuk',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                     const SizedBox(height: 32),
-                    if (!_showOTPField)
                       Form(
                         key: _formKey,
                         child: Column(
@@ -365,100 +277,25 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                                       ),
                               ),
                             ),
-                          ],
-                        ),
-                      )
-                    else
-                      Form(
-                        key: _otpFormKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _otpController,
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                letterSpacing: 8,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: '000000',
-                                hintStyle: const TextStyle(
-                                  color: Colors.white30,
-                                  fontSize: 24,
-                                  letterSpacing: 8,
-                                ),
-                                filled: true,
-                                fillColor: Colors.white.withValues(alpha: 0.1),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Colors.white30),
-                                ),
-                              ),
-                              maxLength: 6,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'OTP tidak boleh kosong';
-                                }
-                                if (value.length != 6) {
-                                  return 'OTP harus 6 digit';
-                                }
-                                return null;
-                              },
-                            ),
                             const SizedBox(height: 24),
-                            BlocBuilder<AuthBloc, AuthState>(
-                              builder: (context, state) {
-                                final isLoading =
-                                    state is AuthLoading || _isVerifyingOTP;
-                                return SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: isLoading ? null : _verifyOTP,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.white,
-                                      foregroundColor: const Color(0xFF2B37D4),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
-                                    ),
-                                    child: isLoading
-                                        ? const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                Color(0xFF2B37D4),
-                                              ),
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Verifikasi & Masuk',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            TextButton(
-                              onPressed: _isSendingOTP ? null : _sendOTP,
-                              child: const Text(
-                                'Kirim Ulang OTP',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  decoration: TextDecoration.underline,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Belum punya akun? ',
+                                  style: TextStyle(color: Colors.white70),
                                 ),
-                              ),
+                                TextButton(
+                                  onPressed: () => context.push('/register-with-otp'),
+                                  child: const Text(
+                                    'Daftar',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

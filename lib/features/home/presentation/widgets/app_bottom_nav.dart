@@ -125,7 +125,7 @@ class NavbarPainter extends CustomPainter {
     
     path.close();
 
-    canvas.drawShadow(path, Colors.black.withOpacity(0.1), 5, true);
+    canvas.drawShadow(path, Colors.black.withValues(alpha: 0.1), 5, true);
     canvas.drawPath(path, paint);
   }
 

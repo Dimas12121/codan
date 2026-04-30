@@ -30,7 +30,7 @@ class _MainPageState extends State<MainPage> {
           const ProfilePage(),
         ],
       ),
-      floatingActionButton: Container(
+      floatingActionButton: SizedBox(
         height: 75,
         width: 75,
         child: FloatingActionButton(

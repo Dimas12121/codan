@@ -6,6 +6,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/login_phone_page.dart';
 import '../../features/auth/presentation/pages/profile_page.dart';
+import '../../features/auth/presentation/pages/verify_otp_page.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/home/presentation/pages/main_page.dart';
@@ -26,7 +27,8 @@ class AppRouter {
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/login-phone' ||
-          state.matchedLocation == '/register-otp';
+          state.matchedLocation == '/register-with-otp' ||
+          state.matchedLocation == '/verify-otp';
       final bool isSplashPage =
           state.matchedLocation == '/splash' ||
           state.matchedLocation == '/splash2';
@@ -60,8 +62,19 @@ class AppRouter {
         builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(
-        path: '/register-otp',
+        path: '/register-with-otp',
         builder: (context, state) => const RegisterWithOTPPage(),
+      ),
+      GoRoute(
+        path: '/verify-otp',
+        builder: (context, state) {
+          final extras = state.extra as Map<String, dynamic>? ?? {};
+          return VerifyOTPPage(
+            destination: extras['destination'] ?? '',
+            type: extras['type'] ?? 'login',
+            onVerify: extras['onVerify'] as Function(String)?,
+          );
+        },
       ),
       GoRoute(
         path: '/profile',

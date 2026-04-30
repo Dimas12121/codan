@@ -142,7 +142,7 @@ class RentPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              ...rentalItems.map((item) => _buildRentListItem(context, item)).toList(),
+              ...rentalItems.map((item) => _buildRentListItem(context, item)),
               const SizedBox(height: 80), // Bottom padding for Navbar
             ],
           ),
@@ -215,7 +215,7 @@ class RentPage extends StatelessWidget {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withOpacity(0.8),
+                    Colors.black.withValues(alpha: 0.8),
                     Colors.transparent,
                   ],
                 ),
@@ -295,7 +295,7 @@ class RentPage extends StatelessWidget {
           border: Border.all(color: Colors.grey.shade100),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

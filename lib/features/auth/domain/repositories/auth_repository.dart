@@ -3,12 +3,13 @@ import '../../domain/entities/user.dart';
 
 abstract class AuthRepository {
   Future<User> login(String email, String password);
-  Future<User> register(String name, String email, String password);
+  Future<User> register(String name, String email, String password, {String role = 'buyer'});
   Future<User> registerWithPhone({
     required String name,
     required String email,
     required String phone,
     required String password,
+    String role = 'buyer',
   });
   Future<void> logout();
   Future<User?> getCurrentUser();

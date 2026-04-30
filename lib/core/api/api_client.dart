@@ -41,34 +41,7 @@ class ApiClient {
             // For example: EventBus().fire(LogoutEvent());
           }
 
-          // Handle network errors
-          if (e.type == DioExceptionType.connectionTimeout ||
-              e.type == DioExceptionType.receiveTimeout ||
-              e.type == DioExceptionType.sendTimeout) {
-            throw 'Connection timeout. Please check your internet connection.';
-          }
-
-          if (e.type == DioExceptionType.connectionError) {
-            throw 'Unable to connect to server. Please check your network.';
-          }
-
-          // Handle Laravel validation errors
-          if (e.response?.statusCode == 422) {
-            final errors = e.response?.data['errors'];
-            if (errors != null) {
-              final errorMessages = errors.values
-                  .map((list) => list.join(', '))
-                  .join('\n');
-              throw errorMessages;
-            }
-          }
-
-          // Default error message
-          final errorMessage =
-              e.response?.data['message'] ??
-              e.message ??
-              'An error occurred. Please try again.';
-          throw errorMessage;
+          return handler.next(e);
         },
       ),
     );

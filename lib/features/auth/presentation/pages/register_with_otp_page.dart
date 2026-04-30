@@ -8,8 +8,6 @@ import '../bloc/auth_state.dart';
 import '../widgets/auth_textfield.dart';
 import '../services/otp_service.dart';
 import '../../data/repositories/auth_repository_impl.dart';
-import '../../data/datasources/auth_remote_data_source.dart';
-import '../../../../core/api/api_client.dart';
 
 class RegisterWithOTPPage extends StatefulWidget {
   const RegisterWithOTPPage({super.key});
@@ -27,13 +25,10 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
   final _otpController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
-  final _otpFormKey = GlobalKey<FormState>();
 
-  bool _showOTPField = false;
   bool _isSendingOTP = false;
-  bool _isVerifyingOTP = false;
   String _generatedOTP = '';
-  String _maskedPhone = '';
+  String _selectedRole = 'buyer';
 
   @override
   void dispose() {
@@ -73,12 +68,11 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
       final otpData = OTPService.generateOTPWithExpiry();
       _generatedOTP = otpData['otp'] as String;
 
-      // Get API client from context
-      final apiClient = context.read<ApiClient>();
-      final authRemoteDataSource = AuthRemoteDataSource(apiClient);
+      // Get repository from context
+      final authRepository = context.read<AuthRepositoryImpl>();
 
       // Send OTP via WhatsApp using Fonnte through backend API
-      final response = await authRemoteDataSource.sendOTPviaWhatsApp(
+      final response = await authRepository.sendOTPviaWhatsApp(
         phone: phone,
         otp: _generatedOTP,
         email: email,
@@ -93,9 +87,13 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
         await OTPService.saveResendTime();
 
         if (mounted) {
-          setState(() {
-            _showOTPField = true;
-            _maskedPhone = OTPService.maskPhoneNumber(phone);
+          context.push('/verify-otp', extra: {
+            'destination': phone,
+            'type': 'register',
+            'onVerify': (String otp) {
+              _otpController.text = otp;
+              _verifyOTP();
+            },
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +134,6 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
   }
 
   Future<void> _verifyOTP() async {
-    if (!_otpFormKey.currentState!.validate()) return;
 
     final otp = _otpController.text;
     final phone = _phoneController.text;
@@ -158,7 +155,7 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
     final email = _emailController.text;
 
     setState(() {
-      _isVerifyingOTP = true;
+      _isSendingOTP = true;
     });
 
     try {
@@ -195,7 +192,7 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
     } finally {
       if (mounted) {
         setState(() {
-          _isVerifyingOTP = false;
+          _isSendingOTP = false;
         });
       }
     }
@@ -210,6 +207,7 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
         password: _passwordController.text,
+        role: _selectedRole,
       ),
     );
   }
@@ -294,7 +292,7 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        _showOTPField ? 'Verify OTP' : 'Register with OTP',
+                        'Create Account',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -303,15 +301,12 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        _showOTPField
-                            ? 'Enter the code sent to your WhatsApp'
-                            : 'Sign up quickly using WhatsApp verification',
+                      const Text(
+                        'Complete your details to start your journey',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white70, fontSize: 14),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                       const SizedBox(height: 32),
-                      if (!_showOTPField)
                         Form(
                           key: _formKey,
                           child: Column(
@@ -377,6 +372,50 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
                                   return null;
                                 },
                               ),
+                              const SizedBox(height: 16),
+                              DropdownButtonFormField<String>(
+                                value: _selectedRole,
+                                dropdownColor: const Color(0xFF2B37D4),
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: 'Select Role',
+                                  hintStyle: const TextStyle(color: Colors.white70),
+                                  filled: true,
+                                  fillColor: Colors.white.withValues(alpha: 0.1),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Colors.white30),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Colors.white30),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'buyer',
+                                    child: Text('Buyer'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'seller',
+                                    child: Text('Seller'),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      _selectedRole = value;
+                                    });
+                                  }
+                                },
+                              ),
                               const SizedBox(height: 32),
                               SizedBox(
                                 width: double.infinity,
@@ -404,75 +443,14 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
                                             ),
                                           ),
                                         )
-                                      : const Text(
-                                          'Send OTP via WhatsApp',
+                                       : const Text(
+                                          'REGISTER',
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
+                                            letterSpacing: 1,
                                           ),
                                         ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        Form(
-                          key: _otpFormKey,
-                          child: Column(
-                            children: [
-                              AuthTextField(
-                                controller: _otpController,
-                                hintText: '6 Digit OTP',
-                                keyboardType: TextInputType.number,
-                                validator: OTPService.validateOTP,
-                              ),
-                              const SizedBox(height: 24),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed:
-                                      _isVerifyingOTP ? null : _verifyOTP,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF2B37D4),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                  ),
-                                  child: _isVerifyingOTP
-                                      ? const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              Color(0xFF2B37D4),
-                                            ),
-                                          ),
-                                        )
-                                      : const Text(
-                                          'Verify & Register',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextButton(
-                                onPressed: _isSendingOTP ? null : _sendOTP,
-                                child: const Text(
-                                  'Resend OTP',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    decoration: TextDecoration.underline,
-                                  ),
                                 ),
                               ),
                             ],

@@ -6,7 +6,6 @@ import '../../../../core/constants/app_constants.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../services/otp_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -22,6 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String _selectedRole = 'buyer';
 
   @override
   void dispose() {
@@ -185,6 +185,50 @@ class _RegisterPageState extends State<RegisterPage> {
                             return null;
                           },
                         ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _selectedRole,
+                          dropdownColor: const Color(0xFF2B37D4),
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Select Role',
+                            hintStyle: const TextStyle(color: Colors.white70),
+                            filled: true,
+                            fillColor: Colors.white.withValues(alpha: 0.1),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white30),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white30),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Colors.white,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'buyer',
+                              child: Text('Buyer'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'seller',
+                              child: Text('Seller'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedRole = value;
+                              });
+                            }
+                          },
+                        ),
                         const SizedBox(height: 32),
                         BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, state) {
@@ -200,6 +244,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   _nameController.text,
                                                   _emailController.text,
                                                   _passwordController.text,
+                                                  role: _selectedRole,
                                                 ),
                                               );
                                         }
@@ -258,7 +303,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         const SizedBox(height: 24),
                         // Link to OTP Registration
                         TextButton(
-                          onPressed: () => context.push('/register-otp'),
+                          onPressed: () => context.push('/register-with-otp'),
                           child: const Text(
                             'Register with WhatsApp OTP instead',
                             style: TextStyle(

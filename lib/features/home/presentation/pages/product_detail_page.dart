@@ -154,7 +154,7 @@ class ProductDetailPage extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.center,
                 colors: [
-                  Colors.black.withOpacity(0.3),
+                  Colors.black.withValues(alpha: 0.3),
                   Colors.transparent,
                 ],
               ),
@@ -227,7 +227,7 @@ class ProductDetailPage extends StatelessWidget {
       width: 4,
       height: 4,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         shape: BoxShape.circle,
       ),
     );
@@ -306,7 +306,7 @@ class ProductDetailPage extends StatelessWidget {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -4),
             ),

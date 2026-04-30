@@ -51,6 +51,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         event.name,
         event.email,
         event.password,
+        role: event.role,
       );
       emit(Authenticated(user));
     } catch (e) {
@@ -69,6 +70,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         phone: event.phone,
         password: event.password,
+        role: event.role,
       );
       emit(Authenticated(user));
     } catch (e) {

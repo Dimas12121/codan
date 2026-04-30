@@ -20,9 +20,10 @@ class AuthRegisterRequested extends AuthEvent {
   final String name;
   final String email;
   final String password;
-  const AuthRegisterRequested(this.name, this.email, this.password);
+  final String role;
+  const AuthRegisterRequested(this.name, this.email, this.password, {this.role = 'buyer'});
   @override
-  List<Object?> get props => [name, email, password];
+  List<Object?> get props => [name, email, password, role];
 }
 
 class AuthRegisterWithPhoneRequested extends AuthEvent {
@@ -30,14 +31,16 @@ class AuthRegisterWithPhoneRequested extends AuthEvent {
   final String email;
   final String phone;
   final String password;
+  final String role;
   const AuthRegisterWithPhoneRequested({
     required this.name,
     required this.email,
     required this.phone,
     required this.password,
+    this.role = 'buyer',
   });
   @override
-  List<Object?> get props => [name, email, phone, password];
+  List<Object?> get props => [name, email, phone, password, role];
 }
 
 class AuthLogoutRequested extends AuthEvent {}

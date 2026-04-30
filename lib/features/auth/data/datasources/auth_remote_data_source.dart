@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/user.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/api/models/api_response.dart';
@@ -52,16 +53,19 @@ class AuthRemoteDataSource {
     required String email,
     required String phone,
     required String password,
+    String role = 'buyer',
   }) async {
     try {
+      debugPrint('Calling registration endpoint: ${AppConstants.registerWithPhoneEndpoint}');
       final response = await apiClient.dio.post(
-        AppConstants.registerEndpoint,
+        AppConstants.registerWithPhoneEndpoint,
         data: {
           'name': name,
           'email': email,
           'phone': phone,
           'password': password,
           'password_confirmation': password,
+          'role': role,
         },
       );
 
@@ -114,6 +118,7 @@ class AuthRemoteDataSource {
           'purpose': purpose,
           'channel': 'whatsapp',
           'provider': 'fonnte',
+          'role': 'buyer',
         },
       );
 

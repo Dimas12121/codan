@@ -1,5 +1,6 @@
 // Environment Configuration
 // Untuk switching antara development dan production
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 enum Environment { development, staging, production }
@@ -29,22 +30,37 @@ class EnvironmentConfig {
     try {
       await dotenv.load(fileName: envFile);
       _envVars = dotenv.env;
-      print('✅ Environment loaded: $env from $envFile');
-      print('📍 API Base URL: $baseUrl');
+      debugPrint('✅ Environment loaded: $env from $envFile');
+      debugPrint('📍 API Base URL: $baseUrl');
     } catch (e) {
-      print('⚠️  Could not load $envFile: $e');
-      print('📍 Using default configuration for: $env');
+      debugPrint('⚠️  Could not load $envFile: $e');
+      debugPrint('📍 Using default configuration for: $env');
       _envVars = {};
     }
   }
 
   static String get baseUrl {
-    return _envVars?['API_BASE_URL'] ??
-        switch (_environment) {
-          Environment.development => 'http://127.0.0.1:8000/api',
-          Environment.staging => 'https://staging.codean.brodims.my.id/api',
-          Environment.production => 'https://codean.brodims.my.id/api',
-        };
+    // Priority 1: Direct API_BASE_URL from .env
+    final envBaseUrl = _envVars?['API_BASE_URL'] ?? 
+                       _envVars?['API_BASE_URL_${_environment.name.toUpperCase()}'];
+    
+    if (envBaseUrl != null) return envBaseUrl;
+
+    // Priority 2: Hardcoded defaults based on environment and platform
+    return switch (_environment) {
+      Environment.development => _getDevelopmentBaseUrl(),
+      Environment.staging => 'https://staging.codean.brodims.my.id/api',
+      Environment.production => 'https://codean.brodims.my.id/api',
+    };
+  }
+
+  static String _getDevelopmentBaseUrl() {
+    // If running on Android emulator, use 10.0.2.2
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000/api';
+    }
+    // Default for iOS emulator, web, and desktop
+    return 'http://127.0.0.1:8000/api';
   }
 
   static String get appName {
@@ -81,34 +97,34 @@ class EnvironmentConfig {
 class AppLogger {
   static void debug(String message) {
     if (EnvironmentConfig.isDevelopment) {
-      print('[DEBUG] $message');
+      debugPrint('[DEBUG] $message');
     }
   }
 
   static void info(String message) {
-    print('[INFO] $message');
+    debugPrint('[INFO] $message');
   }
 
   static void error(String message, [dynamic error]) {
-    print('[ERROR] $message');
+    debugPrint('[ERROR] $message');
     if (error != null) {
-      print('[ERROR DETAILS] $error');
+      debugPrint('[ERROR DETAILS] $error');
     }
   }
 
   static void apiRequest(String method, String endpoint, [dynamic data]) {
     if (EnvironmentConfig.isDevelopment) {
-      print('[API REQUEST] $method $endpoint');
+      debugPrint('[API REQUEST] $method $endpoint');
       if (data != null) {
-        print('[REQUEST DATA] $data');
+        debugPrint('[REQUEST DATA] $data');
       }
     }
   }
 
   static void apiResponse(String method, String endpoint, dynamic response) {
     if (EnvironmentConfig.isDevelopment) {
-      print('[API RESPONSE] $method $endpoint');
-      print('[RESPONSE DATA] $response');
+      debugPrint('[API RESPONSE] $method $endpoint');
+      debugPrint('[RESPONSE DATA] $response');
     }
   }
 }

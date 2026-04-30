@@ -149,7 +149,7 @@ class _SellPageState extends State<SellPage> {
   }
 
   Widget _buildPhotoPicker() {
-    return Container(
+    return SizedBox(
       width: 100,
       height: 100,
       child: CustomPaint(
@@ -280,7 +280,7 @@ class DashedRectPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
-      ..color = color.withOpacity(0.5)
+      ..color = color.withValues(alpha: 0.5)
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 

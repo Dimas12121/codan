@@ -26,7 +26,7 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -107,7 +107,9 @@ class ProductCard extends StatelessWidget {
                           const Icon(Icons.location_on, size: 12, color: Colors.grey),
                           const SizedBox(width: 2),
                           Text(
-                            product.location.length > 10 ? product.location.substring(0, 10) + '...' : product.location,
+                            product.location.length > 10
+                                ? '${product.location.substring(0, 10)}...'
+                                : product.location,
                             style: const TextStyle(fontSize: 10, color: Colors.grey),
                           ),
                         ],

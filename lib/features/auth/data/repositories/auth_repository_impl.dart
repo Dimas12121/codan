@@ -17,24 +17,30 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<User> login(String email, String password) async {
     final apiResponse = await remoteDataSource.login(email, password);
 
-    if (apiResponse.success && apiResponse.data != null) {
-      final responseData = apiResponse.data!;
-      final token = responseData['access_token'];
-      await localDataSource.saveToken(token);
-      return User.fromJson(responseData['user']);
+    if (apiResponse.success) {
+      final token = apiResponse['access_token'];
+      if (token != null) {
+        await localDataSource.saveToken(token);
+      }
+      
+      final userData = apiResponse.data ?? apiResponse['user'];
+      if (userData == null) throw 'User data not found in response';
+      
+      return User.fromJson(userData);
     } else {
       throw apiResponse.message;
     }
   }
 
   @override
-  Future<User> register(String name, String email, String password) async {
+  Future<User> register(String name, String email, String password, {String role = 'buyer'}) async {
     // For backward compatibility, use registerWithPhone with empty phone
     return await registerWithPhone(
       name: name,
       email: email,
       phone: '',
       password: password,
+      role: role,
     );
   }
 
@@ -44,19 +50,26 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String phone,
     required String password,
+    String role = 'buyer',
   }) async {
     final apiResponse = await remoteDataSource.registerWithPhone(
       name: name,
       email: email,
       phone: phone,
       password: password,
+      role: role,
     );
 
-    if (apiResponse.success && apiResponse.data != null) {
-      final responseData = apiResponse.data!;
-      final token = responseData['access_token'];
-      await localDataSource.saveToken(token);
-      return User.fromJson(responseData['user']);
+    if (apiResponse.success) {
+      final token = apiResponse['access_token'];
+      if (token != null) {
+        await localDataSource.saveToken(token);
+      }
+
+      final userData = apiResponse.data ?? apiResponse['user'];
+      if (userData == null) throw 'User data not found in response';
+
+      return User.fromJson(userData);
     } else {
       throw apiResponse.message;
     }
@@ -112,11 +125,16 @@ class AuthRepositoryImpl implements AuthRepository {
       otp: otp,
     );
 
-    if (apiResponse.success && apiResponse.data != null) {
-      final responseData = apiResponse.data!;
-      final token = responseData['access_token'];
-      await localDataSource.saveToken(token);
-      return User.fromJson(responseData['user']);
+    if (apiResponse.success) {
+      final token = apiResponse['access_token'];
+      if (token != null) {
+        await localDataSource.saveToken(token);
+      }
+
+      final userData = apiResponse.data ?? apiResponse['user'];
+      if (userData == null) throw 'User data not found in response';
+
+      return User.fromJson(userData);
     } else {
       throw apiResponse.message;
     }
