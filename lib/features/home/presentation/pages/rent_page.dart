@@ -5,6 +5,7 @@ import 'package:codan/features/product/presentation/bloc/product_bloc.dart';
 import 'package:codan/features/product/presentation/bloc/product_event.dart';
 import 'package:codan/features/product/presentation/bloc/product_state.dart';
 import 'package:codan/features/home/presentation/widgets/product_card.dart';
+import 'package:codan/features/home/presentation/widgets/product_shimmer.dart';
 
 class RentPage extends StatefulWidget {
   const RentPage({super.key});
@@ -42,9 +43,13 @@ class _RentPageState extends State<RentPage> {
         ],
       ),
       body: BlocBuilder<ProductBloc, ProductState>(
+        buildWhen: (previous, current) =>
+            current is ProductLoaded ||
+            current is ProductLoading ||
+            current is ProductError,
         builder: (context, state) {
           if (state is ProductLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const ProductListShimmer(isGrid: true);
           }
 
           if (state is ProductLoaded) {
@@ -74,7 +79,7 @@ class _RentPageState extends State<RentPage> {
                 padding: const EdgeInsets.all(16),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.7,
+                  childAspectRatio: 0.8,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                 ),
@@ -90,7 +95,7 @@ class _RentPageState extends State<RentPage> {
             return Center(child: Text('Error: ${state.message}'));
           }
 
-          return const Center(child: CircularProgressIndicator());
+          return const ProductListShimmer(isGrid: true);
         },
       ),
     );

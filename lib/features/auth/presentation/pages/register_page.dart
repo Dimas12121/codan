@@ -153,6 +153,18 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 16),
                         AuthTextField(
+                          controller: _phoneController,
+                          hintText: 'WhatsApp Number (08xxxx)',
+                          keyboardType: TextInputType.phone,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Phone is required';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        AuthTextField(
                           controller: _passwordController,
                           hintText: 'Password',
                           obscureText: true,
@@ -183,7 +195,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String>(
-                          initialValue: _selectedRole,
+                          value: _selectedRole,
                           dropdownColor: const Color(0xFF2B37D4),
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(

@@ -11,10 +11,12 @@ class Product {
   final String condition;
   final String location;
   final int views;
+  final int userId;
   final int messages;
   final Seller seller;
   final String type; // sell, rent
   final String? rentalPeriod; // daily, weekly, monthly
+  final String status; // active, sold, rented, draft
   final bool isLiked;
 
   Product({
@@ -28,10 +30,12 @@ class Product {
     required this.condition,
     required this.location,
     required this.views,
+    required this.userId,
     required this.messages,
     required this.seller,
     required this.type,
     this.rentalPeriod,
+    this.status = 'active',
     this.isLiked = false,
   });
 
@@ -43,20 +47,29 @@ class Product {
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
       description: json['description'] ?? '',
       imageUrl: json['featured_image']?['image_path'] != null 
-          ? '${AppConstants.baseUrl}${json['featured_image']['image_path']}'
+          ? '${AppConstants.baseUrl.replaceAll(RegExp(r'/api$'), '')}${json['featured_image']['image_path'].toString().startsWith('/') ? '' : '/'}${json['featured_image']['image_path']}'
           : (json['images'] != null && (json['images'] as List).isNotEmpty 
-              ? '${AppConstants.baseUrl}${(json['images'] as List).first['image_path']}'
+              ? '${AppConstants.baseUrl.replaceAll(RegExp(r'/api$'), '')}${(json['images'] as List).first['image_path'].toString().startsWith('/') ? '' : '/'}${(json['images'] as List).first['image_path']}'
               : null),
       category: json['category']?['name'] ?? '',
       condition: json['condition'] ?? 'used',
       location: json['location'] ?? '',
-      views: json['views_count'] ?? 0,
-      messages: 0,
+      views: json['views'] ?? json['views_count'] ?? 0,
+      userId: json['user_id'] ?? 0,
+      messages: json['messages_count'] ?? 0,
       type: json['type'] ?? 'sell',
       rentalPeriod: json['rental_period'],
-      seller: Seller.fromJson(json['user'] ?? {}),
+      status: (json['status'] == 'sold' || json['status'] == 'rented') ? json['status'] : 'active',
+      seller: _parseSeller(json['user'] ?? json['seller']),
       isLiked: json['is_wishlist'] ?? false,
     );
+  }
+
+  static Seller _parseSeller(dynamic json) {
+    if (json == null) return Seller.fromJson({});
+    if (json is Map<String, dynamic>) return Seller.fromJson(json);
+    if (json is String) return Seller.fromJson({'name': json});
+    return Seller.fromJson({});
   }
 }
 
@@ -80,11 +93,18 @@ class Seller {
   factory Seller.fromJson(Map<String, dynamic> json) {
     return Seller(
       id: json['id'] ?? 0,
-      name: json['name'] ?? 'Penjual',
+      name: json['name'] ?? 
+            json['full_name'] ?? 
+            json['nama'] ?? 
+            json['nama_lengkap'] ?? 
+            json['username'] ?? 
+            json['user_name'] ?? 
+            json['display_name'] ?? 
+            'Penjual',
       avatarUrl: json['avatar'] != null 
-          ? (json['avatar'].toString().startsWith('http') ? json['avatar'] : '${AppConstants.baseUrl}/storage/${json['avatar']}')
+          ? (json['avatar'].toString().startsWith('http') ? json['avatar'] : '${AppConstants.baseUrl.replaceAll(RegExp(r'/api$'), '')}/storage/${json['avatar']}')
           : null,
-      major: json['major'] ?? 'Teknik Multimedia',
+      major: json['major'] ?? 'Mahasiswa',
       rating: json['rating']?.toString() ?? '5.0',
       isVerified: true,
     );

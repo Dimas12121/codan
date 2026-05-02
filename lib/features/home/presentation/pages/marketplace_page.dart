@@ -7,6 +7,7 @@ import '../../../product/presentation/bloc/product_bloc.dart';
 import '../../../product/presentation/bloc/product_event.dart';
 import '../../../product/presentation/bloc/product_state.dart';
 import '../widgets/product_card.dart';
+import '../widgets/product_shimmer.dart';
 
 class MarketplacePage extends StatefulWidget {
   final String? initialCategory;
@@ -109,9 +110,13 @@ class _MarketplacePageState extends State<MarketplacePage> {
           ),
           Expanded(
             child: BlocBuilder<ProductBloc, ProductState>(
+              buildWhen: (previous, current) =>
+                  current is ProductLoaded ||
+                  current is ProductLoading ||
+                  current is ProductError,
               builder: (context, state) {
                 if (state is ProductLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const ProductListShimmer(isGrid: true);
                 } else if (state is ProductLoaded) {
                   final filteredProducts = _getFilteredProducts(state.products);
                   
@@ -134,7 +139,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
                           padding: const EdgeInsets.all(20),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            childAspectRatio: 0.7,
+                            childAspectRatio: 0.8,
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
                           ),

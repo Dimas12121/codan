@@ -14,7 +14,7 @@ class ChatPartner extends Equatable {
   factory ChatPartner.fromJson(Map<String, dynamic> json) {
     return ChatPartner(
       id: json['id'] ?? 0,
-      name: json['name'] ?? '',
+      name: json['name'] ?? json['full_name'] ?? json['nama'] ?? 'Pengguna',
       avatar: json['avatar'],
     );
   }

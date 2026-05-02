@@ -196,4 +196,20 @@ class AuthRepositoryImpl implements AuthRepository {
       throw apiResponse.message;
     }
   }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    final apiResponse = await remoteDataSource.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      newPasswordConfirmation: newPasswordConfirmation,
+    );
+    if (!apiResponse.success) {
+      throw apiResponse.message;
+    }
+  }
 }

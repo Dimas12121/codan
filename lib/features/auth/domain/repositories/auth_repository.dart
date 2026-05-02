@@ -42,4 +42,9 @@ abstract class AuthRepository {
     required String otp,
   });
   Future<User> updateProfile(Map<String, dynamic> data);
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  });
 }

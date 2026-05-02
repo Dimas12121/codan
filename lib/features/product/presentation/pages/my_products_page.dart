@@ -40,6 +40,10 @@ class _MyProductsPageState extends State<MyProductsPage> {
         ],
       ),
       body: BlocBuilder<ProductBloc, ProductState>(
+        buildWhen: (previous, current) =>
+            current is ProductLoaded ||
+            current is ProductLoading ||
+            current is ProductError,
         builder: (context, state) {
           if (state is ProductLoading) {
             return const Center(child: CircularProgressIndicator());

@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = codean
+PRODUCT_NAME = codan
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.codean.codean
+PRODUCT_BUNDLE_IDENTIFIER = com.codan.codan
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.codean. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.codan. All rights reserved.

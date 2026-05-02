@@ -118,10 +118,19 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         return;
       }
 
+      // Safe price parsing
+      final String priceText = _priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      if (priceText.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Harga tidak valid')),
+        );
+        return;
+      }
+
       final Map<String, dynamic> data = {
         'title': _titleController.text,
         'category_id': _selectedCategoryId,
-        'price': double.parse(_priceController.text),
+        'price': int.parse(priceText),
         'location': _locationController.text,
         'description': _descriptionController.text,
         'condition': _selectedCondition,
@@ -155,6 +164,10 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         elevation: 0,
       ),
       body: BlocListener<ProductBloc, ProductState>(
+        listenWhen: (previous, current) =>
+            current is ProductOperationLoading ||
+            current is ProductOperationSuccess ||
+            current is ProductOperationError,
         listener: (context, state) {
           if (state is ProductOperationLoading) {
             showDialog(
@@ -162,17 +175,32 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
               barrierDismissible: false,
               builder: (context) => const Center(child: CircularProgressIndicator()),
             );
-          } else if (state is ProductOperationSuccess) {
-            Navigator.pop(context); // Close loading
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-            context.pop(); // Go back
-          } else if (state is ProductOperationError) {
-            Navigator.pop(context); // Close loading
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+          } else {
+            // Close loading dialog if it's open
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+
+            if (state is ProductOperationSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              // Small delay to let snackbar be seen if needed, but usually pop is fine
+              context.pop();
+            } else if (state is ProductOperationError) {
+              // Don't show snackbar if it's a network error (already handled by ApiClient dialog)
+              if (!state.message.contains('No Internet Connection')) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+              }
+            }
           }
         },
         child: SingleChildScrollView(
@@ -284,12 +312,12 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                 _isLoadingCategories
                     ? const CircularProgressIndicator()
                     : DropdownButtonFormField<int>(
-                        initialValue: _selectedCategoryId,
+                        value: _selectedCategoryId,
                         decoration: _buildInputDecoration('Pilih Kategori'),
                         items: _categories.map((cat) {
                           return DropdownMenuItem<int>(
-                            value: cat['id'],
-                            child: Text(cat['name']),
+                            value: int.tryParse(cat['id'].toString()) ?? 0,
+                            child: Text(cat['name'].toString()),
                           );
                         }).toList(),
                         onChanged: (val) {
@@ -311,7 +339,11 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                             controller: _priceController,
                             keyboardType: TextInputType.number,
                             decoration: _buildInputDecoration('0'),
-                            validator: (v) => v!.isEmpty ? 'Harga kosong' : null,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'Harga kosong';
+                              if (double.tryParse(v.replaceAll(RegExp(r'[^0-9]'), '')) == null) return 'Harga tidak valid';
+                              return null;
+                            },
                           ),
                         ],
                       ),
@@ -324,7 +356,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                           children: [
                             _buildLabel('Periode'),
                             DropdownButtonFormField<String>(
-                              initialValue: _selectedRentalPeriod,
+                              value: _selectedRentalPeriod,
                               decoration: _buildInputDecoration('Periode'),
                               items: const [
                                 DropdownMenuItem(value: 'daily', child: Text('Harian')),
@@ -347,7 +379,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                           children: [
                             _buildLabel('Kondisi'),
                             DropdownButtonFormField<String>(
-                              initialValue: _selectedCondition,
+                              value: _selectedCondition,
                               decoration: _buildInputDecoration('Kondisi'),
                               items: const [
                                 DropdownMenuItem(value: 'new', child: Text('Baru')),

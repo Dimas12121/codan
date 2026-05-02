@@ -240,4 +240,26 @@ class AuthRemoteDataSource {
       throw ErrorResponse.fromDioException(e);
     }
   }
+
+  // Change password
+  Future<ApiResponse<void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/profile/change-password',
+        data: {
+          'current_password': currentPassword,
+          'password': newPassword,
+          'password_confirmation': newPasswordConfirmation,
+        },
+      );
+
+      return ApiResponse<void>.fromJson(response.data, (data) {});
+    } on DioException catch (e) {
+      throw ErrorResponse.fromDioException(e);
+    }
+  }
 }

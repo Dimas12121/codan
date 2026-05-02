@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.codean" "\0"
-            VALUE "FileDescription", "codean" "\0"
+            VALUE "CompanyName", "com.codan" "\0"
+            VALUE "FileDescription", "codan" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "codean" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.codean. All rights reserved." "\0"
-            VALUE "OriginalFilename", "codean.exe" "\0"
-            VALUE "ProductName", "codean" "\0"
+            VALUE "InternalName", "codan" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.codan. All rights reserved." "\0"
+            VALUE "OriginalFilename", "codan.exe" "\0"
+            VALUE "ProductName", "codan" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

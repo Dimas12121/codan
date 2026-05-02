@@ -22,7 +22,21 @@ class OfferRemoteDataSourceImpl implements OfferRemoteDataSource {
   Future<List<Offer>> getOffers(String type) async {
     try {
       final response = await apiClient.dio.get('/offers', queryParameters: {'type': type});
-      final List<dynamic> data = response.data['data']['data'] ?? response.data['data'];
+      if (response.data is! Map) {
+        throw 'Invalid response format';
+      }
+
+      final dynamic responseData = response.data['data'];
+      final List<dynamic> data;
+      
+      if (responseData is Map && responseData.containsKey('data')) {
+        data = responseData['data'] ?? [];
+      } else if (responseData is List) {
+        data = responseData;
+      } else {
+        data = [];
+      }
+      
       return data.map((json) => Offer.fromJson(json)).toList();
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
@@ -44,6 +58,9 @@ class OfferRemoteDataSourceImpl implements OfferRemoteDataSource {
           'message': message,
         },
       );
+      if (response.data is! Map || response.data['data'] == null) {
+        throw 'Failed to create offer: Invalid response';
+      }
       return Offer.fromJson(response.data['data']);
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
@@ -57,6 +74,9 @@ class OfferRemoteDataSourceImpl implements OfferRemoteDataSource {
         '/offers/$id/status',
         data: {'status': status},
       );
+      if (response.data is! Map || response.data['data'] == null) {
+        throw 'Failed to update offer status: Invalid response';
+      }
       return Offer.fromJson(response.data['data']);
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);

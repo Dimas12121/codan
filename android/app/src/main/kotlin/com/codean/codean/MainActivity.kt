@@ -1,4 +1,4 @@
-package com.codean.codean
+package com.codan.codan
 
 import io.flutter.embedding.android.FlutterActivity
 

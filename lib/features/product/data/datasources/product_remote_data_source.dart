@@ -30,7 +30,21 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         }..removeWhere((_, v) => v == null),
       );
 
-      final List<dynamic> data = response.data['data']['data'] ?? response.data['data'];
+      if (response.data is! Map) {
+        throw 'Invalid response format: Expected JSON Map but got ${response.data.runtimeType}';
+      }
+
+      final dynamic responseData = response.data['data'];
+      final List<dynamic> data;
+      
+      if (responseData is Map && responseData.containsKey('data')) {
+        data = responseData['data'] ?? [];
+      } else if (responseData is List) {
+        data = responseData;
+      } else {
+        data = [];
+      }
+      
       return data.map((json) => Product.fromJson(json)).toList();
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
@@ -41,6 +55,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<Product> getProductDetail(String identifier) async {
     try {
       final response = await apiClient.dio.get('/produks/$identifier');
+      if (response.data is! Map || response.data['data'] == null) {
+        throw 'Product detail not found or invalid response';
+      }
       return Product.fromJson(response.data['data']);
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
@@ -51,7 +68,21 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<List<Product>> getMyProducts() async {
     try {
       final response = await apiClient.dio.get('/produks/my');
-      final List<dynamic> data = response.data['data']['data'] ?? response.data['data'];
+      if (response.data is! Map) {
+        throw 'Invalid response format';
+      }
+
+      final dynamic responseData = response.data['data'];
+      final List<dynamic> data;
+      
+      if (responseData is Map && responseData.containsKey('data')) {
+        data = responseData['data'] ?? [];
+      } else if (responseData is List) {
+        data = responseData;
+      } else {
+        data = [];
+      }
+      
       return data.map((json) => Product.fromJson(json)).toList();
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
@@ -75,6 +106,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
       final formData = FormData.fromMap(map);
       final response = await apiClient.dio.post('/produks', data: formData);
+      if (response.data is! Map || response.data['data'] == null) {
+        throw 'Failed to create product: Invalid response';
+      }
       return Product.fromJson(response.data['data']);
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
@@ -99,6 +133,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
       final formData = FormData.fromMap(map);
       final response = await apiClient.dio.post('/produks/$id', data: formData);
+      if (response.data is! Map || response.data['data'] == null) {
+        throw 'Failed to update product: Invalid response';
+      }
       return Product.fromJson(response.data['data']);
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
@@ -118,6 +155,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<List<Map<String, dynamic>>> getCategories() async {
     try {
       final response = await apiClient.dio.get('/categories');
+      if (response.data is! Map || response.data['data'] == null) {
+        return [];
+      }
       final List<dynamic> data = response.data['data'];
       return data.map((json) => Map<String, dynamic>.from(json)).toList();
     } on DioException catch (e) {

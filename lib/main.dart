@@ -116,7 +116,10 @@ class MyApp extends StatelessWidget {
           title: AppConstants.appName,
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
+          scaffoldMessengerKey: AppConstants.scaffoldMessengerKey,
           routerConfig: AppRouter.router(authBloc),
+          // Adding builder to support global overlays if needed, 
+          // but for dialogs we usually need the key in GoRouter or MaterialApp
         ),
       ),
     );

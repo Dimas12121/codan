@@ -160,8 +160,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                           const Icon(Icons.error_outline, size: 48, color: Colors.red),
                           const SizedBox(height: 16),
                           Text(
-                            partnerId == 0 
-                                ? 'ID Penjual tidak valid. Silakan coba buka produk ini lagi.' 
+                            partnerId == 0
+                                ? 'Kamu adalah penjualnya, tidak bisa chat sama diri sendiri.' 
                                 : 'Error: ${state.message}',
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.red),

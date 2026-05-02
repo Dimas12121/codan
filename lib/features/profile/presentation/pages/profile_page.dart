@@ -49,7 +49,7 @@ class ProfilePage extends StatelessWidget {
                   _buildSection(
                     title: 'Lainnya',
                     items: [
-                      _buildListTile(Icons.settings_outlined, 'Pengaturan', isLast: false),
+                      _buildListTile(Icons.settings_outlined, 'Pengaturan', isLast: false, onTap: () => context.push('/settings')),
                       _buildListTile(
                         Icons.logout_rounded, 
                         'Keluar', 

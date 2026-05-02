@@ -74,14 +74,14 @@ Route::middleware('auth:sanctum')->group(function () {
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=codean_db
+DB_DATABASE=codan_db
 DB_USERNAME=root
 DB_PASSWORD=
 ```
 
 ## 6. **Flutter Integration**
 
-### AppConstants Update (`CODean/lib/core/constants/app_constants.dart`)
+### AppConstants Update (`codan/lib/core/constants/app_constants.dart`)
 ```dart
 // OTP Endpoints
 static const sendOtpEndpoint = '/send-otp-whatsapp';
@@ -254,15 +254,15 @@ Gagal mengirim OTP: [error message]
 9. `codan_backend/docs/OTP_AND_MYSQL_SETUP.md` - Setup documentation
 
 ### Flutter App:
-1. `CODean/lib/core/constants/app_constants.dart` - Added OTP endpoints
-2. `CODean/lib/features/auth/data/repositories/auth_repository_impl.dart` - OTP methods
-3. `CODean/lib/features/auth/data/datasources/auth_remote_data_source.dart` - OTP API calls
-4. `CODean/lib/features/auth/presentation/pages/register_with_otp_page.dart` - OTP registration page
-5. `CODean/lib/features/auth/presentation/pages/register_page.dart` - Added phone field
-6. `CODean/lib/features/auth/presentation/services/otp_service.dart` - OTP service
-7. `CODean/lib/features/auth/presentation/providers/auth_provider.dart` - Fixed provider
-8. `CODean/lib/features/auth/domain/repositories/auth_repository.dart` - OTP interface
-9. `CODean/lib/features/auth/domain/entities/user.dart` - Added phone fields
-10. `CODean/lib/main.dart` - Cleaned imports
+1. `codan/lib/core/constants/app_constants.dart` - Added OTP endpoints
+2. `codan/lib/features/auth/data/repositories/auth_repository_impl.dart` - OTP methods
+3. `codan/lib/features/auth/data/datasources/auth_remote_data_source.dart` - OTP API calls
+4. `codan/lib/features/auth/presentation/pages/register_with_otp_page.dart` - OTP registration page
+5. `codan/lib/features/auth/presentation/pages/register_page.dart` - Added phone field
+6. `codan/lib/features/auth/presentation/services/otp_service.dart` - OTP service
+7. `codan/lib/features/auth/presentation/providers/auth_provider.dart` - Fixed provider
+8. `codan/lib/features/auth/domain/repositories/auth_repository.dart` - OTP interface
+9. `codan/lib/features/auth/domain/entities/user.dart` - Added phone fields
+10. `codan/lib/main.dart` - Cleaned imports
 
 **Implementasi sudah selesai dan siap untuk testing!**

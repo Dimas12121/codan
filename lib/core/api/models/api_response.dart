@@ -17,17 +17,26 @@ class ApiResponse<T> {
   });
 
   factory ApiResponse.fromJson(
-    Map<String, dynamic> json,
+    dynamic json,
     T Function(dynamic) fromJsonT,
   ) {
+    if (json is! Map) {
+      return ApiResponse<T>(
+        success: false,
+        message: 'Invalid response format: ${json.runtimeType}',
+        rawJson: {},
+      );
+    }
+    
+    final Map<String, dynamic> jsonMap = Map<String, dynamic>.from(json);
     return ApiResponse<T>(
-      success: json['success'] ?? false,
-      message: json['message'] ?? '',
-      data: json['data'] != null ? fromJsonT(json['data']) : null,
-      errors: json['errors'] != null
-          ? Map<String, dynamic>.from(json['errors'])
+      success: jsonMap['success'] ?? false,
+      message: jsonMap['message'] ?? '',
+      data: jsonMap['data'] != null ? fromJsonT(jsonMap['data']) : null,
+      errors: jsonMap['errors'] != null
+          ? Map<String, dynamic>.from(jsonMap['errors'])
           : null,
-      rawJson: json,
+      rawJson: jsonMap,
     );
   }
 
@@ -97,23 +106,33 @@ class ErrorResponse {
     } else if (e.response != null) {
       // Handle Laravel validation errors (422)
       if (e.response?.statusCode == 422) {
-        final errors = e.response?.data['errors'];
-        if (errors is Map) {
-          final errorMessages = errors.values
-              .map((list) => list is List ? list.join(', ') : list.toString())
-              .join('\n');
-          if (errorMessages.isNotEmpty) {
-            message = errorMessages;
+        final responseData = e.response?.data;
+        if (responseData is Map && responseData['errors'] != null) {
+          final errors = responseData['errors'];
+          if (errors is Map) {
+            final errorMessages = errors.values
+                .map((list) => list is List ? list.join(', ') : list.toString())
+                .join('\n');
+            if (errorMessages.isNotEmpty) {
+              message = errorMessages;
+            } else {
+              message = responseData['message'] ?? 'Validation error';
+            }
           } else {
-            message = e.response?.data['message'] ?? 'Validation error';
+            message = responseData['message'] ?? 'Validation error';
           }
         } else {
-          message = e.response?.data['message'] ?? 'Validation error';
+          message = (responseData is Map ? responseData['message'] : null) ?? 'Validation error';
         }
       } else {
-        message = e.response?.data['message'] ??
-            e.response?.statusMessage ??
-            'Server error (${e.response?.statusCode})';
+        final responseData = e.response?.data;
+        if (responseData is Map) {
+          message = responseData['message'] ??
+              e.response?.statusMessage ??
+              'Server error (${e.response?.statusCode})';
+        } else {
+          message = e.response?.statusMessage ?? 'Server error (${e.response?.statusCode})';
+        }
       }
     } else {
       message = e.message ?? 'An unexpected error occurred';
@@ -121,7 +140,7 @@ class ErrorResponse {
 
     return ErrorResponse(
       message: message,
-      errors: e.response?.data['errors'] != null
+      errors: (e.response?.data is Map && e.response?.data['errors'] != null)
           ? Map<String, dynamic>.from(e.response!.data['errors'])
           : null,
       statusCode: e.response?.statusCode,

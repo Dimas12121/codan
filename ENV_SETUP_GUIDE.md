@@ -38,7 +38,7 @@ The app will use default development configuration.
 
 1. **Create .env files in project root:**
    ```
-   CODean/
+   codan/
    ├── .env
    ├── .env.development
    ├── .env.staging
@@ -49,7 +49,7 @@ The app will use default development configuration.
    ```env
    ENVIRONMENT=development
    API_BASE_URL=http://10.0.2.2:8000/api
-   APP_NAME=CODean (Dev)
+   APP_NAME=codan (Dev)
    ENABLE_DEBUG=true
    LOG_LEVEL=debug
    ```
@@ -69,8 +69,8 @@ The app will use default development configuration.
 1. **Update .env.production:**
    ```env
    ENVIRONMENT=production
-   API_BASE_URL=https://codean.brodims.my.id/api
-   APP_NAME=CODean
+   API_BASE_URL=https://codan.brodims.my.id/api
+   APP_NAME=codan
    ENABLE_DEBUG=false
    LOG_LEVEL=error
    ```
@@ -100,8 +100,8 @@ The app will use default development configuration.
 
 ### Default Values (if .env not found):
 - Development: `http://10.0.2.2:8000/api`
-- Staging: `https://staging.codean.brodims.my.id/api`
-- Production: `https://codean.brodims.my.id/api`
+- Staging: `https://staging.codan.brodims.my.id/api`
+- Production: `https://codan.brodims.my.id/api`
 
 ## Troubleshooting
 
@@ -128,7 +128,7 @@ The app will use default development configuration.
 ## File Structure
 
 ```
-CODean/
+codan/
 ├── .env                    # Base environment template
 ├── .env.development        # Development configuration
 ├── .env.staging           # Staging configuration
@@ -152,7 +152,7 @@ CODean/
 ### 1. Clone/Download Project
 ```bash
 git clone <repository>
-cd CODean
+cd codan
 ```
 
 ### 2. Install Dependencies

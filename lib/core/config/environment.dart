@@ -41,15 +41,19 @@ class EnvironmentConfig {
 
   static String get baseUrl {
     // Priority 1: Direct API_BASE_URL from .env
-    final envBaseUrl = _envVars?['API_BASE_URL'] ?? 
-                       _envVars?['API_BASE_URL_${_environment.name.toUpperCase()}'];
-    
+    final envBaseUrl =
+        _envVars?['API_BASE_URL'] ??
+        _envVars?['API_BASE_URL_${_environment.name.toUpperCase()}'];
+
     if (envBaseUrl != null) {
       // If running on Android emulator and baseUrl is localhost, use 10.0.2.2
-      if (!kIsWeb && 
-          defaultTargetPlatform == TargetPlatform.android && 
-          (envBaseUrl.contains('127.0.0.1') || envBaseUrl.contains('localhost'))) {
-        return envBaseUrl.replaceAll('127.0.0.1', '10.0.2.2').replaceAll('localhost', '10.0.2.2');
+      if (!kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.android &&
+          (envBaseUrl.contains('127.0.0.1') ||
+              envBaseUrl.contains('localhost'))) {
+        return envBaseUrl
+            .replaceAll('127.0.0.1', '10.0.2.2')
+            .replaceAll('localhost', '10.0.2.2');
       }
       return envBaseUrl;
     }
@@ -57,8 +61,8 @@ class EnvironmentConfig {
     // Priority 2: Hardcoded defaults based on environment and platform
     return switch (_environment) {
       Environment.development => _getDevelopmentBaseUrl(),
-      Environment.staging => 'https://staging.codean.brodims.my.id/api',
-      Environment.production => 'https://codean.brodims.my.id/api',
+      Environment.staging => 'https://staging.codan.brodims.my.id/api',
+      Environment.production => 'https://codan.brodims.my.id/api',
     };
   }
 
@@ -72,7 +76,7 @@ class EnvironmentConfig {
   }
 
   static String get appName {
-    return _envVars?['APP_NAME'] ?? 'CODean';
+    return _envVars?['APP_NAME'] ?? 'codan';
   }
 
   static bool get enableDebug {

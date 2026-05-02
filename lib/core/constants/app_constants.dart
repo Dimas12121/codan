@@ -34,7 +34,7 @@ class AppConstants {
   static String get appName => EnvironmentConfig.appName;
 
   // Database Configuration (for reference - actual DB is on Laravel backend)
-  static const dbName = 'codean_db';
+  static const dbName = 'codan_db';
   static const dbUser = 'root';
   static const dbPassword = '';
   static const dbHost = '127.0.0.1';
@@ -58,5 +58,8 @@ class AppConstants {
   static const checkPhoneEndpoint = '/check-phone';
   static const updatePhoneEndpoint = '/update-phone';
   static const updateProfileEndpoint = '/profile/update';
+  
+  // Global Keys for UI alerts from non-context classes
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 }
- 

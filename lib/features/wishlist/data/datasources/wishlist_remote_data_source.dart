@@ -17,10 +17,28 @@ class WishlistRemoteDataSourceImpl implements WishlistRemoteDataSource {
   Future<List<Product>> getWishlist() async {
     try {
       final response = await apiClient.dio.get('/wishlists');
-      final List<dynamic> data = response.data['data']['data'] ?? response.data['data'];
+      if (response.data is! Map) {
+        throw 'Invalid response format';
+      }
+
+      final dynamic responseData = response.data['data'];
+      final List<dynamic> data;
+      
+      if (responseData is Map && responseData.containsKey('data')) {
+        data = responseData['data'] ?? [];
+      } else if (responseData is List) {
+        data = responseData;
+      } else {
+        data = [];
+      }
       
       // Wishlist items usually contain a 'produk' object
-      return data.map((item) => Product.fromJson(item['produk'])).toList();
+      return data.map((item) {
+        if (item is Map && item.containsKey('produk')) {
+          return Product.fromJson(item['produk']);
+        }
+        return Product.fromJson(item);
+      }).toList();
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
     }
@@ -34,6 +52,7 @@ class WishlistRemoteDataSourceImpl implements WishlistRemoteDataSource {
         data: {'produk_id': produkId},
       );
       
+      if (response.data is! Map) return false;
       return response.data['status'] == 'added';
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);

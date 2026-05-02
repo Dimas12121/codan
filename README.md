@@ -1,10 +1,10 @@
-# 🚀 CODean (CODAN) - Campus Marketplace & Rental App
+# 🚀 codan (CODAN) - Campus Marketplace & Rental App
 
 [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com)
 
-**CODean** (atau **CODAN**) adalah platform marketplace modern yang dirancang khusus untuk kebutuhan mahasiswa. Aplikasi ini memungkinkan pengguna untuk melakukan jual-beli barang bekas berkualitas serta menyewakan barang (seperti alat praktikum, buku, dsb) dalam lingkup kampus yang aman dan terpercaya.
+**codan** (atau **CODAN**) adalah platform marketplace modern yang dirancang khusus untuk kebutuhan mahasiswa. Aplikasi ini memungkinkan pengguna untuk melakukan jual-beli barang bekas berkualitas serta menyewakan barang (seperti alat praktikum, buku, dsb) dalam lingkup kampus yang aman dan terpercaya.
 
 ---
 

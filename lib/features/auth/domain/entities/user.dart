@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-
+import '../../../../core/constants/app_constants.dart';
 class User extends Equatable {
   final int id;
   final String name;
@@ -26,18 +26,25 @@ class User extends Equatable {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? 0,
-      name: json['name'] ?? '',
+      name: json['name'] ?? json['full_name'] ?? json['nama'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? json['telp'] ?? '',
       isPhoneVerified: json['is_phone_verified'] == 1 ||
           json['is_phone_verified'] == true ||
           json['phone_verified'] == 1 ||
           json['phone_verified'] == true,
-      profilePhoto: json['profile_photo_url'] ?? json['image'] ?? json['avatar'],
+      profilePhoto: _parseProfilePhoto(json['profile_photo_url'] ?? json['image'] ?? json['avatar']),
       location: json['location'],
       bio: json['bio'],
       role: json['role'],
     );
+  }
+
+  static String? _parseProfilePhoto(dynamic photo) {
+    if (photo == null || photo.toString().isEmpty) return null;
+    final String photoStr = photo.toString();
+    if (photoStr.startsWith('http')) return photoStr;
+    return '${AppConstants.baseUrl.replaceAll(RegExp(r'/api$'), '')}/storage/$photoStr';
   }
 
   Map<String, dynamic> toJson() {

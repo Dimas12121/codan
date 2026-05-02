@@ -116,13 +116,6 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
     final otp = _otpController.text;
     final phone = _phoneController.text;
 
-    if (otp != _generatedOTP) {
-      if (mounted) {
-        AppSnackBar.showError(context, 'Masukkan OTP yang Anda terima');
-      }
-      return;
-    }
-
     // Simpan ref sebelum semua async gap
     final authRepository = context.read<AuthRepositoryImpl>();
     final email = _emailController.text;

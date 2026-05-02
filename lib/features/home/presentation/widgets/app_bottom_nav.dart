@@ -32,7 +32,7 @@ class AppBottomNav extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(0, Icons.home_filled, 'HOME'),
-                _buildNavItem(1, Icons.list_alt_rounded, 'MARKET'),
+                _buildNavItem(1, Icons.list_alt_rounded, 'SEWA'),
                 const SizedBox(width: 60), // Space for FAB
                 _buildNavItem(3, Icons.chat_bubble_outline_rounded, 'CHAT'),
                 _buildNavItem(4, Icons.person_outline_rounded, 'PROFILE'),

@@ -10,6 +10,7 @@ import '../widgets/product_card.dart';
 import '../../../product/presentation/bloc/product_bloc.dart';
 import '../../../product/presentation/bloc/product_event.dart';
 import '../../../product/presentation/bloc/product_state.dart';
+import '../widgets/product_shimmer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -59,19 +60,21 @@ class _HomePageState extends State<HomePage> {
                             child: const Row(
                               children: [
                                 Icon(Icons.search, color: Colors.white),
-                                SizedBox(width: 12),
-                                Text(
-                                  'Find Mobile Phones and more',
-                                  style: TextStyle(color: Colors.white, fontSize: 13),
+                                SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'Cari barang dan lainnya',
+                                    style: TextStyle(color: Colors.white, fontSize: 10),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      const Icon(Icons.shopping_cart_outlined, color: AppColors.searchBarBackground, size: 28),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () => context.push('/notifications'),
                         child: BlocBuilder<NotificationBloc, NotificationState>(
@@ -124,7 +127,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       const Expanded(
                         flex: 1,
-                        child: Icon(Icons.vpn_key_outlined, size: 80, color: Colors.white24),
+                        child: Image(image: AssetImage('assets/images/key.png'))
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -227,103 +230,87 @@ class _HomePageState extends State<HomePage> {
               
               BlocBuilder<ProductBloc, ProductState>(
                 builder: (context, state) {
-                  if (state is ProductLoading) {
-                    return const SizedBox(
-                      height: 290,
-                      child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
-                    );
-                  } else if (state is ProductLoaded) {
+                  if (state is ProductLoading) return const ProductListShimmer();
+                  if (state is ProductLoaded) {
                     if (state.products.isEmpty) {
                       return const SizedBox(
-                        height: 290,
+                        height: 100,
                         child: Center(child: Text('Belum ada produk.')),
                       );
                     }
                     
-                    // Ambil maksimal 3 produk untuk rekomendasi
-                    final recommendations = state.products.take(3).toList();
+                    // Show all products if less than 4, otherwise split
+                    final bool hasMany = state.products.length > 3;
+                    final recommendations = hasMany ? state.products.take(3).toList() : state.products;
                     
-                    return SizedBox(
-                      height: 290,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.only(left: 20),
-                        itemCount: recommendations.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            width: 190,
-                            margin: const EdgeInsets.only(right: 16),
-                            child: ProductCard(product: recommendations[index]),
-                          );
-                        },
-                      ),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 240,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.only(left: 20),
+                            itemCount: recommendations.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                width: 190,
+                                margin: const EdgeInsets.only(right: 16),
+                                child: ProductCard(product: recommendations[index]),
+                              );
+                            },
+                          ),
+                        ),
+                        
+                        if (hasMany) ...[
+                          const SizedBox(height: 20),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Lainnya',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                ),
+                                GestureDetector(
+                                  onTap: () => context.push('/marketplace'),
+                                  child: const Text(
+                                    'Lihat semua',
+                                    style: TextStyle(fontSize: 13, color: AppColors.searchBarBackground, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.8,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemCount: state.products.length - 3,
+                              itemBuilder: (context, index) {
+                                return ProductCard(product: state.products[index + 3]);
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
                     );
                   } else if (state is ProductError) {
-                    return SizedBox(
-                      height: 290,
+                    return Padding(
+                      padding: const EdgeInsets.all(20.0),
                       child: Center(child: Text('Gagal memuat: ${state.message}')),
                     );
                   }
                   
-                  return const SizedBox(height: 290);
-                },
-              ),
-
-
-              const SizedBox(height: 20),
-
-              // Lainnya
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Lainnya',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                    ),
-                    GestureDetector(
-                      onTap: () => context.push('/marketplace'),
-                      child: const Text(
-                        'Lihat semua',
-                        style: TextStyle(fontSize: 13, color: AppColors.searchBarBackground, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              BlocBuilder<ProductBloc, ProductState>(
-                builder: (context, state) {
-                  if (state is ProductLoaded) {
-                    // Ambil sisa produk setelah 3 produk pertama
-                    final others = state.products.skip(3).toList();
-                    
-                    if (others.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Center(child: Text('Tidak ada produk lainnya.')),
-                      );
-                    }
-                    
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.6,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
-                        itemCount: others.length,
-                        itemBuilder: (context, index) {
-                          return ProductCard(product: others[index]);
-                        },
-                      ),
-                    );
-                  }
                   return const SizedBox();
                 },
               ),

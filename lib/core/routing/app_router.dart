@@ -10,9 +10,18 @@ import '../../features/splash/presentation/pages/splash2_page.dart';
 import '../../features/product/product.dart';
 import '../../features/wishlist/wishlist.dart';
 import '../../features/notification/notification.dart';
+import '../../features/profile/presentation/pages/settings_page.dart';
+import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/profile/presentation/pages/change_password_page.dart';
+import '../../features/profile/presentation/pages/notification_settings_page.dart';
+import '../../features/profile/presentation/pages/help_center_page.dart';
+import '../../features/profile/presentation/pages/language_settings_page.dart';
+
+import '../constants/app_constants.dart';
 
 class AppRouter {
   static GoRouter router(AuthBloc authBloc) => GoRouter(
+    navigatorKey: AppConstants.navigatorKey,
     initialLocation: '/splash',
     refreshListenable: GoRouterRefreshBloc(authBloc),
     redirect: (context, state) {
@@ -101,7 +110,10 @@ class AppRouter {
       ),
       GoRoute(
         path: '/add-product',
-        builder: (context, state) => const AddEditProductPage(),
+        builder: (context, state) {
+          final product = state.extra as Product?;
+          return AddEditProductPage(product: product);
+        },
       ),
       GoRoute(
         path: '/edit-product',
@@ -117,6 +129,30 @@ class AppRouter {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationPage(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsPage(),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordPage(),
+      ),
+      GoRoute(
+        path: '/notification-settings',
+        builder: (context, state) => const NotificationSettingsPage(),
+      ),
+      GoRoute(
+        path: '/help-center',
+        builder: (context, state) => const HelpCenterPage(),
+      ),
+      GoRoute(
+        path: '/language-settings',
+        builder: (context, state) => const LanguageSettingsPage(),
       ),
       GoRoute(
         path: '/my-products',

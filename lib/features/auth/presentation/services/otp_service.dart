@@ -145,11 +145,11 @@ class OTPService {
 
     // Format Indonesian phone number
     if (digits.startsWith('0')) {
-      return '+62${digits.substring(1)}';
+      return '62${digits.substring(1)}';
     } else if (digits.startsWith('62')) {
-      return '+$digits';
+      return digits;
     } else {
-      return '+62$digits';
+      return '62$digits';
     }
   }
 

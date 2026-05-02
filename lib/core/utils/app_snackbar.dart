@@ -34,6 +34,9 @@ class AppSnackBar {
     required Color backgroundColor,
     required IconData icon,
   }) {
+    // Don't show snackbar if it's a network error (already handled by ApiClient dialog)
+    if (message.contains('No Internet Connection')) return;
+    
     if (!context.mounted) return;
 
     final messenger = ScaffoldMessenger.maybeOf(context);
