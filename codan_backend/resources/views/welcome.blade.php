@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>CODean | Jual Beli Aman dan Nyaman</title>
+        <title>codan | Jual Beli Aman dan Nyaman</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -48,7 +48,7 @@
                                 <i data-lucide="shopping-bag" class="text-white w-4 h-4 lg:w-5 lg:h-5"></i>
                             </div>
                             <div class="flex flex-col">
-                                <span class="text-lg lg:text-xl font-black tracking-tighter text-white uppercase italic shimmer-text leading-none">CODean</span>
+                                <span class="text-lg lg:text-xl font-black tracking-tighter text-white uppercase italic shimmer-text leading-none">codan</span>
                                 <span class="text-[7px] lg:text-[8px] font-black tracking-[0.4em] text-blue-400 mt-0.5 ml-0.5">MARKETPLACE</span>
                             </div>
                         </a>
@@ -92,7 +92,7 @@
                             <div class="pl-4">
                                 <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
                             </div>
-                            <input type="text" name="search" placeholder="Cari di CODean..." class="flex-1 bg-transparent border-none focus:ring-0 text-xs text-white font-bold py-2.5">
+                            <input type="text" name="search" placeholder="Cari di codan..." class="flex-1 bg-transparent border-none focus:ring-0 text-xs text-white font-bold py-2.5">
                         </div>
                         <button type="button" class="p-3 bg-white/10 rounded-2xl text-white">
                             <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
@@ -273,7 +273,7 @@
                     <h2 class="text-3xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-4 lg:mb-6">
                         Jual Cepat <br class="hidden lg:block"> <span class="text-blue-500 italic">Tanpa Ribet.</span>
                     </h2>
-                    <p class="text-gray-300 text-sm lg:text-lg mb-8 lg:mb-10 max-w-md font-medium leading-relaxed opacity-90">Bergabunglah dengan jutaan orang lainnya yang telah berhasil menjual barang mereka di CODean.</p>
+                    <p class="text-gray-300 text-sm lg:text-lg mb-8 lg:mb-10 max-w-md font-medium leading-relaxed opacity-90">Bergabunglah dengan jutaan orang lainnya yang telah berhasil menjual barang mereka di codan.</p>
                     <div class="flex flex-col sm:flex-row gap-4">
                         <a href="{{ route('produks.create') }}" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-white text-slate-900 font-black text-xs uppercase tracking-widest hover:shadow-2xl transition-all hover:-translate-y-1 shadow-xl">
                             Pasang Iklan Sekarang
@@ -419,7 +419,7 @@
                 </div>
 
                 <div class="pt-12 border-t border-slate-900 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-black uppercase tracking-widest">
-                    <p>© 2026 CODEAN MARKETPLACE. ALL RIGHTS RESERVED.</p>
+                    <p>© 2026 codan MARKETPLACE. ALL RIGHTS RESERVED.</p>
                     <div class="flex gap-8">
                         <a href="#" class="hover:text-white transition-colors">Sitemap</a>
                         <a href="#" class="hover:text-white transition-colors">Contact</a>

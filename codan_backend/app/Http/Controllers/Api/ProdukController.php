@@ -15,7 +15,7 @@ class ProdukController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Produk::with(['featuredImage', 'category', 'user']);
+        $query = Produk::with(['featuredImage', 'category', 'user'])->withCount('messages');
 
         if ($request->has('category')) {
             $query->whereHas('category', function($q) use ($request) {
@@ -31,7 +31,7 @@ class ProdukController extends Controller
             $query->where('type', $request->type);
         }
 
-        $produks = $query->where('status', 'active')->latest()->paginate(10);
+        $produks = $query->whereIn('status', ['active', 'sold', 'rented'])->latest()->paginate(10);
 
         return response()->json([
             'success' => true,
@@ -86,7 +86,7 @@ class ProdukController extends Controller
 
     public function show($identifier)
     {
-        $produk = Produk::with(['user', 'category', 'images'])
+        $produk = Produk::with(['user', 'category', 'images'])->withCount('messages')
             ->where(function($query) use ($identifier) {
                 $query->where('id', $identifier)
                       ->orWhere('slug', $identifier);
@@ -116,7 +116,7 @@ class ProdukController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        $request->validate(['status' => 'required|in:active,sold,draft']);
+        $request->validate(['status' => 'required|in:active,sold,rented,draft']);
         $produk->update(['status' => $request->status]);
 
         return response()->json(['success' => true, 'message' => 'Status updated', 'data' => $produk]);
@@ -144,6 +144,7 @@ class ProdukController extends Controller
     {
         $produks = Produk::where('user_id', $request->user()->id)
             ->with(['featuredImage', 'category'])
+            ->withCount('messages')
             ->latest()
             ->paginate(15);
 
@@ -173,7 +174,7 @@ class ProdukController extends Controller
             'location' => 'sometimes|required|max:255',
             'description' => 'sometimes|required',
             'condition' => 'sometimes|in:new,used',
-            'status' => 'sometimes|in:active,sold,draft',
+            'status' => 'sometimes|in:active,sold,rented,draft',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
 

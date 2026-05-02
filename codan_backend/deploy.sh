@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# CODean Laravel Backend Deployment Script
-# For domain: codean.brodims.my.id
+# codan Laravel Backend Deployment Script
+# For domain: codan.brodims.my.id
 
 set -e
 
-echo "🚀 Starting CODean Backend Deployment"
-echo "📌 Target Domain: codean.brodims.my.id"
+echo "🚀 Starting codan Backend Deployment"
+echo "📌 Target Domain: codan.brodims.my.id"
 echo "=========================================="
 
 # Check if running as root
@@ -16,10 +16,10 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Variables
-DOMAIN="codean.brodims.my.id"
-APP_DIR="/var/www/codean-backend"
-NGINX_CONF="/etc/nginx/sites-available/codean"
-NGINX_ENABLED="/etc/nginx/sites-enabled/codean"
+DOMAIN="codan.brodims.my.id"
+APP_DIR="/var/www/codan-backend"
+NGINX_CONF="/etc/nginx/sites-available/codan"
+NGINX_ENABLED="/etc/nginx/sites-enabled/codan"
 PHP_VERSION="8.3"
 
 echo "1. 📦 Installing required packages..."
@@ -35,9 +35,9 @@ chown -R $USER:$USER $APP_DIR
 chmod -R 755 $APP_DIR
 
 echo "3. 🔧 Configuring MySQL..."
-mysql -e "CREATE DATABASE IF NOT EXISTS codean_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -e "CREATE USER IF NOT EXISTS 'codean_user'@'localhost' IDENTIFIED BY 'Codean@123';"
-mysql -e "GRANT ALL PRIVILEGES ON codean_db.* TO 'codean_user'@'localhost';"
+mysql -e "CREATE DATABASE IF NOT EXISTS codan_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -e "CREATE USER IF NOT EXISTS 'codan_user'@'localhost' IDENTIFIED BY 'codan@123';"
+mysql -e "GRANT ALL PRIVILEGES ON codan_db.* TO 'codan_user'@'localhost';"
 mysql -e "FLUSH PRIVILEGES;"
 
 echo "4. ⚙️  Configuring PHP-FPM..."

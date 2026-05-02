@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Login | CODean Marketplace</title>
+        <title>Login | codan Marketplace</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -80,7 +80,7 @@
                     <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
                         <i data-lucide="shopping-bag" class="text-[#00f2ea] w-6 h-6"></i>
                     </div>
-                    <span class="text-2xl font-black text-white tracking-tighter uppercase italic">CODean Marketplace</span>
+                    <span class="text-2xl font-black text-white tracking-tighter uppercase italic">codan Marketplace</span>
                 </div>
 
                 <nav class="flex gap-8 lg:gap-16">
@@ -169,7 +169,7 @@
                     </div>
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-widest text-white">E-Mail</p>
-                        <p class="text-xs font-bold text-white">support@codean.com</p>
+                        <p class="text-xs font-bold text-white">support@codan.com</p>
                     </div>
                 </div>
 
@@ -179,7 +179,7 @@
                     </div>
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-widest text-white">Website</p>
-                        <p class="text-xs font-bold text-white">www.codean-marketplace.com</p>
+                        <p class="text-xs font-bold text-white">www.codan-marketplace.com</p>
                     </div>
                 </div>
 

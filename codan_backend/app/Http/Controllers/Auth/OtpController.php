@@ -68,7 +68,7 @@ class OtpController extends Controller
 
         // Kirim OTP via WhatsApp (Fonnte)
         $message = "Halo {$request->name}! \n\n" . 
-                   "Kode verifikasi (OTP) untuk pendaftaran Anda di CODean Marketplace adalah: *{$otp}* \n\n" .
+                   "Kode verifikasi (OTP) untuk pendaftaran Anda di codan Marketplace adalah: *{$otp}* \n\n" .
                    "Kode ini berlaku selama 5 menit. Jangan berikan kode ini kepada siapapun.";
                    
         $this->sendWhatsApp($request->phone, $message);

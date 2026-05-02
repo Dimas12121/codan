@@ -9,7 +9,7 @@
                         <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
                             <i data-lucide="shopping-bag" class="text-white w-6 h-6"></i>
                         </div>
-                        <span class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">CODean</span>
+                        <span class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">codan</span>
                     </a>
                 </div>
 

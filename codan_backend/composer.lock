@@ -6925,7 +6925,7 @@
                     "homepage": "https://symfony.com/contributors"
                 }
             ],
-            "description": "Provides an object-oriented API to strings andCODean with bytes, UTF-8 code points and grapheme clusters in a unified way",
+            "description": "Provides an object-oriented API to strings andcodan with bytes, UTF-8 code points and grapheme clusters in a unified way",
             "homepage": "https://symfony.com",
             "keywords": [
                 "grapheme",

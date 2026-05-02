@@ -1,7 +1,7 @@
 @echo off
 echo ==========================================
-echo CODean Laravel Backend Deployment Script
-echo For domain: codean.brodims.my.id
+echo codan Laravel Backend Deployment Script
+echo For domain: codan.brodims.my.id
 echo ==========================================
 echo.
 echo This is a deployment guide for Windows/WSL/Linux

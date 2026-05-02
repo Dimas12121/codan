@@ -1,12 +1,12 @@
 <?php
-// Test connection script for codean.brodims.my.id
+// Test connection script for codan.brodims.my.id
 // Place this in public directory and access via browser
 
 header('Content-Type: application/json');
 
 $response = [
     'status' => 'success',
-    'message' => 'CODean API is running',
+    'message' => 'codan API is running',
     'timestamp' => date('Y-m-d H:i:s'),
     'environment' => getenv('APP_ENV') ?: 'not_set',
     'domain' => $_SERVER['HTTP_HOST'] ?? 'unknown',

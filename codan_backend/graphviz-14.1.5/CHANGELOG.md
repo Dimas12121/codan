@@ -2318,7 +2318,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - lib/vpsc: rename bcopy->b_copy !1334
 
 ### Fixed
-- MSB4018 The NativeCodeAnalysis task failed unexpectedly. #1481
+- MSB4018 The Nativecodanalysis task failed unexpectedly. #1481
 
 ## [2.42.4] - 2020-04-05
 

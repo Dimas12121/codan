@@ -93,7 +93,7 @@ class HealthController extends Controller
         
         return response()->json([
             'status' => $status,
-            'service' => 'CODean API',
+            'service' => 'codan API',
             'version' => '1.0.0',
             'timestamp' => now()->toDateTimeString(),
             'checks' => $checks,
@@ -151,11 +151,11 @@ class HealthController extends Controller
         
         return response()->json([
             'status' => 'operational',
-            'service' => 'CODean API',
+            'service' => 'codan API',
             'version' => '1.0.0',
             'endpoints' => $endpoints,
             'timestamp' => now()->toDateTimeString(),
-            'documentation' => 'https://codean.brodims.my.id/api-docs',
+            'documentation' => 'https://codan.brodims.my.id/api-docs',
         ]);
     }
 }

@@ -4,7 +4,7 @@
 
 ### Prerequisites:
 - MySQL Server installed dan running
-- Database `codean_db` dibuat
+- Database `codan_db` dibuat
 
 ### Steps:
 
@@ -21,7 +21,7 @@
 
 2. **Create Database**:
    ```sql
-   CREATE DATABASE codean_db;
+   CREATE DATABASE codan_db;
    ```
 
 3. **Update Laravel .env**:
@@ -30,7 +30,7 @@
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
    DB_PORT=3306
-   DB_DATABASE=codean_db
+   DB_DATABASE=codan_db
    DB_USERNAME=root
    DB_PASSWORD=  # sesuaikan dengan password MySQL Anda
    ```
@@ -147,7 +147,7 @@ Authorization: Bearer {token}
 ## 4. Flutter Integration
 
 ### AppConstants Update:
-File `CODean/lib/core/constants/app_constants.dart` sudah diupdate dengan endpoint OTP:
+File `codan/lib/core/constants/app_constants.dart` sudah diupdate dengan endpoint OTP:
 ```dart
 // OTP Endpoints
 static const sendOtpEndpoint = '/send-otp-whatsapp';

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ $produk->title }} | CODean</title>
+        <title>{{ $produk->title }} | codan</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@
                             <div class="w-8 h-8 sm:w-10 sm:h-10 sell-btn rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                                 <i data-lucide="shopping-bag" class="text-white w-5 h-5 sm:w-6 sm:h-6"></i>
                             </div>
-                            <span class="text-xl font-black tracking-tighter uppercase italic hidden sm:block">CODean</span>
+                            <span class="text-xl font-black tracking-tighter uppercase italic hidden sm:block">codan</span>
                         </a>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-4">
@@ -280,7 +280,7 @@
         </div>
 
         <footer class="bg-slate-900 text-slate-500 py-10 text-center text-[10px] font-black uppercase tracking-[0.2em] mt-20">
-            © 2026 CODean Project.
+            © 2026 codan Project.
         </footer>
 
         <script>

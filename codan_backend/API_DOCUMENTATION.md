@@ -1,4 +1,4 @@
-# Codean API Documentation
+# codan API Documentation
 
 ## Base URL
 `http://your-domain.com/api`

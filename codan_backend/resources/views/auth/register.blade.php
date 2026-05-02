@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Daftar Akun | CODean Marketplace</title>
+        <title>Daftar Akun | codan Marketplace</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -83,7 +83,7 @@
                     <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
                         <i data-lucide="shopping-bag" class="text-[#00f2ea] w-6 h-6"></i>
                     </div>
-                    <span class="hidden sm:block text-xl font-black text-white tracking-tighter uppercase italic">CODean Marketplace</span>
+                    <span class="hidden sm:block text-xl font-black text-white tracking-tighter uppercase italic">codan Marketplace</span>
                 </div>
 
                 <nav class="flex gap-6 lg:gap-12">
@@ -360,11 +360,11 @@
                 </div>
                 <div class="flex items-center gap-4 text-white hover:bg-white/5 p-3 rounded-2xl transition-all cursor-pointer">
                     <div class="w-10 h-10 rounded-full border border-white/50 flex items-center justify-center"><i data-lucide="mail" class="w-4 h-4"></i></div>
-                    <div><p class="text-[8px] font-black uppercase tracking-widest text-[#00f2ea]">E-Mail</p><p class="text-[10px] font-bold">support@codean.com</p></div>
+                    <div><p class="text-[8px] font-black uppercase tracking-widest text-[#00f2ea]">E-Mail</p><p class="text-[10px] font-bold">support@codan.com</p></div>
                 </div>
                 <div class="flex items-center gap-4 text-white hover:bg-white/5 p-3 rounded-2xl transition-all cursor-pointer">
                     <div class="w-10 h-10 rounded-full border border-white/50 flex items-center justify-center"><i data-lucide="globe" class="w-4 h-4"></i></div>
-                    <div><p class="text-[8px] font-black uppercase tracking-widest text-[#00f2ea]">Web</p><p class="text-[10px] font-bold">www.codean.com</p></div>
+                    <div><p class="text-[8px] font-black uppercase tracking-widest text-[#00f2ea]">Web</p><p class="text-[10px] font-bold">www.codan.com</p></div>
                 </div>
                 <div class="flex items-center gap-4 text-white hover:bg-white/5 p-3 rounded-2xl transition-all cursor-pointer">
                     <div class="w-10 h-10 rounded-full border border-white/50 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4"></i></div>
