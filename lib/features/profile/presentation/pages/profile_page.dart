@@ -36,19 +36,31 @@ class ProfilePage extends StatelessWidget {
                       _buildListTile(Icons.favorite_border, 'Wishlist', isLast: true, onTap: () => context.push('/wishlist')),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  _buildSection(
-                    title: 'Jual & Sewa',
-                    items: [
-                      _buildListTile(Icons.storefront_outlined, 'Produk Saya', isLast: false, onTap: () => context.push('/my-products')),
-                      _buildListTile(Icons.swap_horiz, 'Sewaan Saya', isLast: false),
-                      _buildListTile(Icons.star_outline, 'Ulasan & Rating', isLast: true),
-                    ],
-                  ),
+                  if (user.role == 'seller') ...[
+                    const SizedBox(height: 24),
+                    _buildSection(
+                      title: 'Jual & Sewa',
+                      items: [
+                        _buildListTile(Icons.storefront_outlined, 'Produk Saya', isLast: false, onTap: () => context.push('/my-products')),
+                        _buildListTile(Icons.swap_horiz, 'Sewaan Saya', isLast: false),
+                        _buildListTile(Icons.star_outline, 'Ulasan & Rating', isLast: true),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   _buildSection(
                     title: 'Lainnya',
                     items: [
+                      _buildListTile(
+                        user.role == 'seller' ? Icons.person_outline : Icons.storefront_outlined, 
+                        user.role == 'seller' ? 'Beralih ke Pembeli' : 'Beralih ke Penjual', 
+                        isLast: false, 
+                        onTap: () {
+                          context.read<AuthBloc>().add(
+                            AuthUpdateProfileRequested({'role': user.role == 'seller' ? 'buyer' : 'seller'}),
+                          );
+                        }
+                      ),
                       _buildListTile(Icons.settings_outlined, 'Pengaturan', isLast: false, onTap: () => context.push('/settings')),
                       _buildListTile(
                         Icons.logout_rounded, 
@@ -61,7 +73,7 @@ class ProfilePage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 120), // Extra space for bottom nav
+                  const SizedBox(height: 160), // Extra space for bottom nav
                 ],
               ),
             ),

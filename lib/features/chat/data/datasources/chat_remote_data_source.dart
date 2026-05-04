@@ -18,6 +18,7 @@ abstract class ChatRemoteDataSource {
   });
   Future<void> markAsRead(int produkId, int partnerId);
   Future<void> deleteMessage(int messageId);
+  Future<void> clearConversation(int produkId, int partnerId);
 }
 
 class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
@@ -107,6 +108,15 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   Future<void> deleteMessage(int messageId) async {
     try {
       await apiClient.dio.delete('/messages/$messageId');
+    } on DioException catch (e) {
+      throw ErrorResponse.fromDioException(e);
+    }
+  }
+
+  @override
+  Future<void> clearConversation(int produkId, int partnerId) async {
+    try {
+      await apiClient.dio.delete('/messages/clear/$produkId/$partnerId');
     } on DioException catch (e) {
       throw ErrorResponse.fromDioException(e);
     }

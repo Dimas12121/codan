@@ -47,4 +47,9 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<void> deleteMessage(int messageId) async {
     return await remoteDataSource.deleteMessage(messageId);
   }
+
+  @override
+  Future<void> clearConversation(int produkId, int partnerId) async {
+    return await remoteDataSource.clearConversation(produkId, partnerId);
+  }
 }

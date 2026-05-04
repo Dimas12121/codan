@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+
 import 'features/auth/auth.dart';
 import 'features/chat/chat.dart';
 import 'features/notification/notification.dart';
@@ -5,6 +7,9 @@ import 'features/offer/offer.dart';
 import 'features/product/product.dart';
 import 'features/wishlist/wishlist.dart';
 import 'features/search/presentation/bloc/search_bloc.dart';
+import 'features/review/data/datasources/review_remote_data_source.dart';
+import 'features/review/data/repositories/review_repository_impl.dart';
+import 'features/review/presentation/bloc/review_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/api/api_client.dart';
@@ -56,7 +61,16 @@ void main() async {
   final offerRepository = OfferRepositoryImpl(remoteDataSource: offerRemoteDataSource);
   final offerBloc = OfferBloc(repository: offerRepository);
 
+  final reviewRemoteDataSource = ReviewRemoteDataSourceImpl(apiClient: apiClient);
+  final reviewRepository = ReviewRepositoryImpl(remoteDataSource: reviewRemoteDataSource);
+  final reviewBloc = ReviewBloc(repository: reviewRepository);
+
   final searchBloc = SearchBloc(repository: productRepository);
+  
+  // Trigger auth check for auto-login
+  authBloc.add(AuthCheckRequested());
+
+  final router = AppRouter.router(authBloc);
 
   runApp(MyApp(
     authBloc: authBloc,
@@ -65,9 +79,11 @@ void main() async {
     wishlistBloc: wishlistBloc,
     notificationBloc: notificationBloc,
     offerBloc: offerBloc,
+    reviewBloc: reviewBloc,
     searchBloc: searchBloc,
     apiClient: apiClient,
     authRepository: authRepository,
+    router: router,
   ));
 }
 
@@ -78,9 +94,11 @@ class MyApp extends StatelessWidget {
   final WishlistBloc wishlistBloc;
   final NotificationBloc notificationBloc;
   final OfferBloc offerBloc;
+  final ReviewBloc reviewBloc;
   final SearchBloc searchBloc;
   final ApiClient apiClient;
   final AuthRepositoryImpl authRepository;
+  final GoRouter router;
 
   const MyApp({
     super.key,
@@ -90,9 +108,11 @@ class MyApp extends StatelessWidget {
     required this.wishlistBloc,
     required this.notificationBloc,
     required this.offerBloc,
+    required this.reviewBloc,
     required this.searchBloc,
     required this.apiClient,
     required this.authRepository,
+    required this.router,
   });
 
   @override
@@ -110,6 +130,7 @@ class MyApp extends StatelessWidget {
           BlocProvider.value(value: wishlistBloc),
           BlocProvider.value(value: notificationBloc),
           BlocProvider.value(value: offerBloc),
+          BlocProvider.value(value: reviewBloc),
           BlocProvider.value(value: searchBloc),
         ],
         child: MaterialApp.router(
@@ -117,9 +138,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           scaffoldMessengerKey: AppConstants.scaffoldMessengerKey,
-          routerConfig: AppRouter.router(authBloc),
-          // Adding builder to support global overlays if needed, 
-          // but for dialogs we usually need the key in GoRouter or MaterialApp
+          routerConfig: router,
         ),
       ),
     );

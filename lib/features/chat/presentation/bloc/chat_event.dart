@@ -66,3 +66,13 @@ class DeleteMessage extends ChatEvent {
   @override
   List<Object?> get props => [messageId];
 }
+
+class DeleteChatHistory extends ChatEvent {
+  final int produkId;
+  final int partnerId;
+
+  const DeleteChatHistory(this.produkId, this.partnerId);
+
+  @override
+  List<Object?> get props => [produkId, partnerId];
+}

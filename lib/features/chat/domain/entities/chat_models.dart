@@ -19,12 +19,12 @@ class ChatInbox extends Equatable {
 
   factory ChatInbox.fromJson(Map<String, dynamic> json) {
     return ChatInbox(
-      id: json['id'],
-      listing: ChatListing.fromJson(json['listing']),
-      partner: ChatPartner.fromJson(json['partner']),
-      lastMessage: json['last_message'],
-      unreadCount: json['unread_count'],
-      timestamp: json['timestamp'],
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      listing: ChatListing.fromJson(json['listing'] ?? {}),
+      partner: ChatPartner.fromJson(json['partner'] ?? {}),
+      lastMessage: json['last_message'] ?? '',
+      unreadCount: int.tryParse(json['unread_count']?.toString() ?? '0') ?? 0,
+      timestamp: json['timestamp'] ?? '',
     );
   }
 
@@ -47,10 +47,10 @@ class ChatListing extends Equatable {
 
   factory ChatListing.fromJson(Map<String, dynamic> json) {
     return ChatListing(
-      id: json['id'],
-      title: json['title'],
-      image: json['image'],
-      price: json['price'],
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      title: json['title'] ?? '',
+      image: json['image'] ?? '',
+      price: json['price'] != null ? (int.tryParse(json['price'].toString()) ?? 0) : null,
     );
   }
 
@@ -69,8 +69,8 @@ class ChatPartner extends Equatable {
 
   factory ChatPartner.fromJson(Map<String, dynamic> json) {
     return ChatPartner(
-      id: json['id'],
-      name: json['name'],
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      name: json['name'] ?? 'User',
     );
   }
 
@@ -99,13 +99,13 @@ class Message extends Equatable {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      id: json['id'],
-      senderId: json['sender_id'],
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      senderId: int.tryParse(json['sender_id']?.toString() ?? '') ?? 0,
       message: json['message'],
       imagePath: json['image_path'],
       latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
-      isRead: json['is_read'] ?? false,
-      createdAt: json['created_at'],
+      isRead: json['is_read'] == 1 || json['is_read'] == true,
+      createdAt: json['created_at'] ?? '',
     );
   }
 

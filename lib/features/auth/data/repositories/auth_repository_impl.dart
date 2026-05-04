@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '../datasources/auth_local_data_source.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../../domain/entities/user.dart';
@@ -26,7 +27,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final userData = apiResponse.data ?? apiResponse['user'];
       if (userData == null) throw 'User data not found in response';
       
-      return User.fromJson(userData);
+      final user = User.fromJson(userData);
+      await localDataSource.saveUser(json.encode(user.toJson()));
+      return user;
     } else {
       throw apiResponse.message;
     }
@@ -68,7 +71,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final userData = apiResponse.data ?? apiResponse['user'];
       if (userData == null) throw 'User data not found in response';
 
-      return User.fromJson(userData);
+      final user = User.fromJson(userData);
+      await localDataSource.saveUser(json.encode(user.toJson()));
+      return user;
     } else {
       throw apiResponse.message;
     }
@@ -95,15 +100,24 @@ class AuthRepositoryImpl implements AuthRepository {
       final apiResponse = await remoteDataSource.getUser();
 
       if (apiResponse.success && apiResponse.data != null) {
-        return apiResponse.data!;
+        final user = apiResponse.data!;
+        await localDataSource.saveUser(json.encode(user.toJson()));
+        return user;
       } else {
-        // If API returns unsuccessful response, clear token
+        // If API returns unsuccessful response (e.g. 401), clear token
         await localDataSource.clearToken();
         return null;
       }
-    } catch (_) {
-      // If any error occurs, clear token for security
-      await localDataSource.clearToken();
+    } catch (e) {
+      // Check if it's a network error or 401
+      final cachedUserJson = await localDataSource.getUser();
+      if (cachedUserJson != null) {
+        try {
+          return User.fromJson(json.decode(cachedUserJson));
+        } catch (_) {
+          return null;
+        }
+      }
       return null;
     }
   }
@@ -133,7 +147,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final userData = apiResponse.data ?? apiResponse['user'];
       if (userData == null) throw 'User data not found in response';
 
-      return User.fromJson(userData);
+      final user = User.fromJson(userData);
+      await localDataSource.saveUser(json.encode(user.toJson()));
+      return user;
     } else {
       throw apiResponse.message;
     }
@@ -191,7 +207,9 @@ class AuthRepositoryImpl implements AuthRepository {
     if (apiResponse.success) {
       final userData = apiResponse.data;
       if (userData == null) throw 'User data not found in response';
-      return User.fromJson(userData);
+      final user = User.fromJson(userData);
+      await localDataSource.saveUser(json.encode(user.toJson()));
+      return user;
     } else {
       throw apiResponse.message;
     }

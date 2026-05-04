@@ -8,6 +8,8 @@ class User extends Equatable {
   final bool isPhoneVerified;
   final String? profilePhoto;
   final String? location;
+  final double? latitude;
+  final double? longitude;
   final String? bio;
   final String? role;
 
@@ -19,13 +21,15 @@ class User extends Equatable {
     this.isPhoneVerified = false,
     this.profilePhoto,
     this.location,
+    this.latitude,
+    this.longitude,
     this.bio,
     this.role,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       name: json['name'] ?? json['full_name'] ?? json['nama'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? json['telp'] ?? '',
@@ -35,6 +39,8 @@ class User extends Equatable {
           json['phone_verified'] == true,
       profilePhoto: _parseProfilePhoto(json['profile_photo_url'] ?? json['image'] ?? json['avatar']),
       location: json['location'],
+      latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
+      longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
       bio: json['bio'],
       role: json['role'],
     );
@@ -56,6 +62,8 @@ class User extends Equatable {
       'is_phone_verified': isPhoneVerified,
       'profile_photo_url': profilePhoto,
       'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
       'bio': bio,
       'role': role,
     };
@@ -70,6 +78,8 @@ class User extends Equatable {
     isPhoneVerified,
     profilePhoto,
     location,
+    latitude,
+    longitude,
     bio,
     role,
   ];

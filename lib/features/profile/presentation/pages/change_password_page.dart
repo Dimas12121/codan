@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:codan/features/auth/domain/repositories/auth_repository.dart';
+import 'package:codan/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:codan/core/constants/app_constants.dart';
+import 'package:codan/core/utils/app_snackbar.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -30,7 +31,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        final repository = context.read<AuthRepository>();
+        final repository = context.read<AuthRepositoryImpl>();
         await repository.changePassword(
           currentPassword: _currentPasswordController.text,
           newPassword: _newPasswordController.text,
@@ -38,22 +39,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         );
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Kata sandi berhasil diubah'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AppSnackBar.showSuccess(context, 'Kata sandi berhasil diubah');
           context.pop();
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: AppColors.error,
-            ),
-          );
+          AppSnackBar.showError(context, e.toString());
         }
       } finally {
         if (mounted) setState(() => _isLoading = false);

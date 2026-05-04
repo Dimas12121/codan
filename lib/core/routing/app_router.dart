@@ -16,6 +16,13 @@ import '../../features/profile/presentation/pages/change_password_page.dart';
 import '../../features/profile/presentation/pages/notification_settings_page.dart';
 import '../../features/profile/presentation/pages/help_center_page.dart';
 import '../../features/profile/presentation/pages/language_settings_page.dart';
+import '../../features/review/presentation/pages/review_page.dart';
+import '../../features/review/presentation/pages/write_review_page.dart';
+import '../../features/review/presentation/bloc/review_bloc.dart';
+import '../../features/offer/presentation/pages/seller_offers_page.dart';
+import '../../features/offer/presentation/pages/buyer_orders_page.dart';
+import '../../features/offer/presentation/bloc/offer_bloc.dart';
+import '../../features/auth/presentation/pages/seller_profile_page.dart';
 
 import '../constants/app_constants.dart';
 
@@ -38,8 +45,8 @@ class AppRouter {
           state.matchedLocation == '/splash2';
       final bool isProtectedPage = !isAuthPage && !isSplashPage;
 
-      // Jika user belum login dan mencoba akses protected page
-      if (authState is! Authenticated && isProtectedPage) {
+      // Jika user belum login (sudah dikonfirmasi Unauthenticated) dan mencoba akses protected page
+      if (authState is Unauthenticated && isProtectedPage) {
         return '/login';
       }
 
@@ -157,6 +164,60 @@ class AppRouter {
       GoRoute(
         path: '/my-products',
         builder: (context, state) => const MyProductsPage(),
+      ),
+      GoRoute(
+        path: '/reviews/:userId',
+        builder: (context, state) {
+          final userId = int.parse(state.pathParameters['userId']!);
+          final userName = state.uri.queryParameters['name'] ?? 'Penjual';
+          return BlocProvider.value(
+            value: context.read<ReviewBloc>(),
+            child: ReviewPage(userId: userId, userName: userName),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/write-review',
+        builder: (context, state) {
+          final extras = state.extra as Map<String, dynamic>;
+          return BlocProvider.value(
+            value: context.read<ReviewBloc>(),
+            child: WriteReviewPage(
+              revieweeId: extras['revieweeId'] as int,
+              produkId: extras['produkId'] as int,
+              sellerName: extras['sellerName'] as String,
+              productName: extras['productName'] as String,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/seller-offers',
+        builder: (context, state) => BlocProvider.value(
+          value: context.read<OfferBloc>(),
+          child: const SellerOffersPage(),
+        ),
+      ),
+      GoRoute(
+        path: '/my-orders',
+        builder: (context, state) => BlocProvider.value(
+          value: context.read<OfferBloc>(),
+          child: const BuyerOrdersPage(),
+        ),
+      ),
+      GoRoute(
+        path: '/seller-profile',
+        builder: (context, state) {
+          final seller = state.extra as Seller;
+          return SellerProfilePage(seller: seller);
+        },
+      ),
+      GoRoute(
+        path: '/product-detail',
+        builder: (context, state) {
+          final product = state.extra as Product;
+          return ProductDetailPage(product: product);
+        },
       ),
     ],
   );

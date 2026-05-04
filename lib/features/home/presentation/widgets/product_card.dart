@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../product/domain/entities/product.dart';
@@ -70,6 +71,14 @@ class ProductCard extends StatelessWidget {
                               product.imageUrl!,
                               width: double.infinity,
                               fit: BoxFit.cover,
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(color: Colors.white),
+                                );
+                              },
                               errorBuilder: (context, error, stackTrace) =>
                                   _buildFallbackImage(),
                             )

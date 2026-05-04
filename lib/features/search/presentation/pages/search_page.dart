@@ -212,7 +212,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
         const SizedBox(height: 12),
-        ..._recentSearches.map((search) => _buildRecentSearchItem(Icons.history, search)).toList(),
+        ..._recentSearches.map((search) => _buildRecentSearchItem(Icons.history, search)),
         if (_recentSearches.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.0),

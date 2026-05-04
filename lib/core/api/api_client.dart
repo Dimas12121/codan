@@ -1,8 +1,8 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
+import '../utils/app_snackbar.dart';
 
 class ApiClient {
   late Dio dio;
@@ -72,85 +72,15 @@ class ApiClient {
     if (context == null) return;
 
     _isConnectivityDialogOpen = true;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: Colors.grey.shade200,
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Illustration (Simulating the blue blob from screenshot)
-              Container(
-                width: 100,
-                height: 120,
-                decoration: const BoxDecoration(
-                  color: Colors.blueAccent,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('>', style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
-                          Text('<', style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      Text('D', style: TextStyle(color: Colors.red, fontSize: 20, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Ups, Koneksi Terputus',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Silakan cek koneksi internet Anda dan coba lagi nanti :)',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _isConnectivityDialogOpen = false;
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Kembali',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    
+    AppSnackBar.showError(
+      context, 
+      'Mohon cek sinyal atau Wifi kamu dan coba beberapa saat lagi',
+      title: 'Wah, Koneksi kamu hilang',
+      buttonLabel: 'Coba lagi',
+      onButtonPressed: () {
+        _isConnectivityDialogOpen = false;
+      },
     );
   }
 }

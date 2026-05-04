@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../../../product/presentation/bloc/product_bloc.dart';
 import '../../../product/presentation/bloc/product_event.dart';
 import '../../../product/presentation/bloc/product_state.dart';
@@ -42,9 +43,7 @@ class _SellPageState extends State<SellPage> {
       body: BlocConsumer<ProductBloc, ProductState>(
         listener: (context, state) {
           if (state is ProductOperationSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            AppSnackBar.showSuccess(context, state.message);
             context.read<ProductBloc>().add(const LoadMyProducts());
           }
         },
@@ -70,6 +69,7 @@ class _SellPageState extends State<SellPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'sell_add_fab',
         onPressed: () => context.push('/add-product'),
         label: const Text('Jual Barang Baru'),
         icon: const Icon(Icons.add),

@@ -68,7 +68,9 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
 
   OfferBloc({required this.repository}) : super(OfferInitial()) {
     on<LoadOffers>((event, emit) async {
-      emit(OfferLoading());
+      if (state is! OffersLoaded) {
+        emit(OfferLoading());
+      }
       try {
         final offers = await repository.getOffers(event.type);
         emit(OffersLoaded(offers));

@@ -14,13 +14,19 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   }
 
   Future<void> _onLoadNotifications(LoadNotifications event, Emitter<NotificationState> emit) async {
-    emit(NotificationLoading());
+    // Only show loading if we don't have data yet
+    if (state is! NotificationLoaded) {
+      emit(NotificationLoading());
+    }
     try {
       final notifications = await repository.getNotifications();
       final unreadCount = await repository.getUnreadCount();
       emit(NotificationLoaded(notifications: notifications, unreadCount: unreadCount));
     } catch (e) {
-      emit(NotificationError(e.toString()));
+      // If we already have data, don't show error state, just keep current data
+      if (state is! NotificationLoaded) {
+        emit(NotificationError(e.toString()));
+      }
     }
   }
 

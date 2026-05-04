@@ -23,9 +23,9 @@ class Offer {
 
   factory Offer.fromJson(Map<String, dynamic> json) {
     return Offer(
-      id: json['id'] ?? 0,
-      userId: json['user_id'] ?? 0,
-      produkId: json['produk_id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      userId: int.tryParse(json['user_id']?.toString() ?? '') ?? 0,
+      produkId: int.tryParse(json['produk_id']?.toString() ?? '') ?? 0,
       offerPrice: double.tryParse(json['offer_price']?.toString() ?? '0') ?? 0,
       message: json['message'],
       status: json['status'] ?? 'pending',

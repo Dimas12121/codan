@@ -15,4 +15,5 @@ abstract class ChatRepository {
   });
   Future<void> markAsRead(int produkId, int partnerId);
   Future<void> deleteMessage(int messageId);
+  Future<void> clearConversation(int produkId, int partnerId);
 }

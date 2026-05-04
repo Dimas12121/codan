@@ -214,11 +214,14 @@ class AuthController extends Controller
             'name' => 'sometimes|string|max:255',
             'phone' => 'sometimes|string|max:20',
             'location' => 'sometimes|nullable|string|max:255',
+            'latitude' => 'sometimes|nullable|numeric',
+            'longitude' => 'sometimes|nullable|numeric',
             'bio' => 'sometimes|nullable|string|max:500',
             'avatar' => 'sometimes|nullable|image|max:2048',
+            'role' => 'sometimes|in:buyer,seller',
         ]);
 
-        $data = $request->only(['name', 'phone', 'location', 'bio']);
+        $data = $request->only(['name', 'phone', 'location', 'latitude', 'longitude', 'bio', 'role']);
 
         if ($request->hasFile('avatar')) {
             // Delete old avatar if exists

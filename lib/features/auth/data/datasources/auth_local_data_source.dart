@@ -14,6 +14,16 @@ class AuthLocalDataSource {
     return prefs.getString(_tokenKey);
   }
 
+  Future<void> saveUser(String userJson) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userKey, userJson);
+  }
+
+  Future<String?> getUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userKey);
+  }
+
   Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);

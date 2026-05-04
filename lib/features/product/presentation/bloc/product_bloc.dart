@@ -19,7 +19,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     LoadProducts event,
     Emitter<ProductState> emit,
   ) async {
-    emit(ProductLoading());
+    if (state is! ProductLoaded) {
+      emit(ProductLoading());
+    }
     try {
       final products = await repository.getProducts(
         category: event.category,
@@ -28,7 +30,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       );
       emit(ProductLoaded(products));
     } catch (e) {
-      emit(ProductError(e.toString()));
+      if (state is! ProductLoaded) {
+        emit(ProductError(e.toString()));
+      }
     }
   }
 
@@ -36,7 +40,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     LoadProductDetail event,
     Emitter<ProductState> emit,
   ) async {
-    emit(ProductDetailLoading());
+    if (state is! ProductDetailLoaded) {
+      emit(ProductDetailLoading());
+    }
     try {
       final product = await repository.getProductDetail(event.identifier);
       emit(ProductDetailLoaded(product));
@@ -49,7 +55,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     LoadMyProducts event,
     Emitter<ProductState> emit,
   ) async {
-    emit(ProductLoading());
+    if (state is! ProductLoaded) {
+      emit(ProductLoading());
+    }
     try {
       final products = await repository.getMyProducts();
       emit(ProductLoaded(products));

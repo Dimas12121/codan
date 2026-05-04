@@ -326,7 +326,7 @@ class _RegisterWithOTPPageState extends State<RegisterWithOTPPage> {
                               ),
                               const SizedBox(height: 16),
                               DropdownButtonFormField<String>(
-                                value: _selectedRole,
+                                initialValue: _selectedRole,
                                 dropdownColor: const Color(0xFF2B37D4),
                                 style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(

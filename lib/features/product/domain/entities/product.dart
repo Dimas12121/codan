@@ -41,7 +41,7 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       title: json['title'] ?? '',
       slug: json['slug'] ?? '',
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
@@ -54,9 +54,9 @@ class Product {
       category: json['category']?['name'] ?? '',
       condition: json['condition'] ?? 'used',
       location: json['location'] ?? '',
-      views: json['views'] ?? json['views_count'] ?? 0,
-      userId: json['user_id'] ?? 0,
-      messages: json['messages_count'] ?? 0,
+      views: int.tryParse(json['views']?.toString() ?? json['views_count']?.toString() ?? '0') ?? 0,
+      userId: int.tryParse(json['user_id']?.toString() ?? '') ?? 0,
+      messages: int.tryParse(json['messages_count']?.toString() ?? '0') ?? 0,
       type: json['type'] ?? 'sell',
       rentalPeriod: json['rental_period'],
       status: (json['status'] == 'sold' || json['status'] == 'rented') ? json['status'] : 'active',
@@ -80,6 +80,7 @@ class Seller {
   final String major;
   final String rating;
   final bool isVerified;
+  final String? phone;
 
   Seller({
     required this.id,
@@ -88,11 +89,12 @@ class Seller {
     required this.major,
     required this.rating,
     this.isVerified = false,
+    this.phone,
   });
 
   factory Seller.fromJson(Map<String, dynamic> json) {
     return Seller(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       name: json['name'] ?? 
             json['full_name'] ?? 
             json['nama'] ?? 
@@ -107,6 +109,7 @@ class Seller {
       major: json['major'] ?? 'Mahasiswa',
       rating: json['rating']?.toString() ?? '5.0',
       isVerified: true,
+      phone: json['phone']?.toString(),
     );
   }
 }

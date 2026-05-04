@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../../domain/entities/product.dart';
 import '../bloc/product_bloc.dart';
 import '../bloc/product_event.dart';
@@ -77,9 +78,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         setState(() {
           _isLoadingCategories = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat kategori: $e')),
-        );
+        AppSnackBar.showError(context, 'Gagal memuat kategori: $e');
       }
     }
   }
@@ -105,25 +104,19 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       if (_selectedCategoryId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Silakan pilih kategori')),
-        );
+        AppSnackBar.showInfo(context, 'Silakan pilih kategori');
         return;
       }
 
       if (!isEdit && _images.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Silakan tambahkan setidaknya satu gambar')),
-        );
+        AppSnackBar.showInfo(context, 'Silakan tambahkan setidaknya satu gambar');
         return;
       }
 
       // Safe price parsing
       final String priceText = _priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
       if (priceText.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Harga tidak valid')),
-        );
+        AppSnackBar.showInfo(context, 'Harga tidak valid');
         return;
       }
 
@@ -182,23 +175,13 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
             }
 
             if (state is ProductOperationSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              AppSnackBar.showSuccess(context, state.message);
               // Small delay to let snackbar be seen if needed, but usually pop is fine
               context.pop();
             } else if (state is ProductOperationError) {
               // Don't show snackbar if it's a network error (already handled by ApiClient dialog)
               if (!state.message.contains('No Internet Connection')) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: AppColors.error,
-                  ),
-                );
+                AppSnackBar.showError(context, state.message);
               }
             }
           }
@@ -312,7 +295,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                 _isLoadingCategories
                     ? const CircularProgressIndicator()
                     : DropdownButtonFormField<int>(
-                        value: _selectedCategoryId,
+                        initialValue: _selectedCategoryId,
                         decoration: _buildInputDecoration('Pilih Kategori'),
                         items: _categories.map((cat) {
                           return DropdownMenuItem<int>(
@@ -356,7 +339,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                           children: [
                             _buildLabel('Periode'),
                             DropdownButtonFormField<String>(
-                              value: _selectedRentalPeriod,
+                              initialValue: _selectedRentalPeriod,
                               decoration: _buildInputDecoration('Periode'),
                               items: const [
                                 DropdownMenuItem(value: 'daily', child: Text('Harian')),
@@ -379,7 +362,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                           children: [
                             _buildLabel('Kondisi'),
                             DropdownButtonFormField<String>(
-                              value: _selectedCondition,
+                              initialValue: _selectedCondition,
                               decoration: _buildInputDecoration('Kondisi'),
                               items: const [
                                 DropdownMenuItem(value: 'new', child: Text('Baru')),

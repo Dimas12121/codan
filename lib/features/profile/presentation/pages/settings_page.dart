@@ -5,6 +5,7 @@ import 'package:codan/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:codan/features/auth/presentation/bloc/auth_event.dart';
 import 'package:codan/features/auth/presentation/bloc/auth_state.dart';
 import 'package:codan/core/constants/app_constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -85,7 +86,6 @@ class SettingsPage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 24),
-
                 // App Info Section
                 _buildSection(
                   title: 'Aplikasi',
@@ -100,7 +100,17 @@ class SettingsPage extends StatelessWidget {
                       Icons.help_outline_rounded,
                       'Pusat Bantuan',
                       'FAQ dan dukungan',
-                      onTap: () => context.push('/help-center'),
+                      onTap: () async {
+                        final waUrl = Uri.parse(
+                          'https://wa.me/628987950875?text=Halo%20Admin%20CODAN,%20saya%20butuh%20bantuan',
+                        );
+                        if (await canLaunchUrl(waUrl)) {
+                          await launchUrl(
+                            waUrl,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        }
+                      },
                     ),
                     _buildSettingsItem(
                       Icons.info_outline_rounded,

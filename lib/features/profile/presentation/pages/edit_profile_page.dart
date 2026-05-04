@@ -7,6 +7,7 @@ import 'package:codan/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:codan/features/auth/presentation/bloc/auth_event.dart';
 import 'package:codan/features/auth/presentation/bloc/auth_state.dart';
 import 'package:codan/core/constants/app_constants.dart';
+import 'package:codan/core/utils/app_snackbar.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -74,12 +75,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       
       context.read<AuthBloc>().add(AuthUpdateProfileRequested(data));
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profil berhasil diperbarui'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackBar.showSuccess(context, 'Profil berhasil diperbarui');
       context.pop();
     }
   }

@@ -110,10 +110,17 @@
                         <h1 class="text-xl font-bold leading-tight mb-6">{{ $produk->title }}</h1>
                         
                         <div class="flex items-center justify-between text-xs text-gray-400 font-black uppercase tracking-widest mb-6">
-                            <span class="flex items-center gap-1.5 font-bold">
-                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                                {{ $produk->location }}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="flex items-center gap-1.5 font-bold">
+                                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                                    {{ $produk->location }}
+                                </span>
+                                @if($produk->location)
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($produk->location) }}" target="_blank" class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-white hover:bg-emerald-600 transition-all shadow-sm" title="Lihat di Maps">
+                                    <i data-lucide="navigation" class="w-3 h-3"></i>
+                                </a>
+                                @endif
+                            </div>
                             <span>{{ $produk->created_at->format('d M') }}</span>
                         </div>
 

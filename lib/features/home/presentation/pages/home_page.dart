@@ -57,17 +57,33 @@ class _HomePageState extends State<HomePage> {
                               color: AppColors.searchBarBackground,
                               borderRadius: BorderRadius.circular(25),
                             ),
-                            child: const Row(
+                            child: Row(
                               children: [
-                                Icon(Icons.search, color: Colors.white),
-                                SizedBox(width: 8),
-                                Flexible(
+                                ShaderMask(
+                                  shaderCallback: (bounds) => const LinearGradient(
+                                    colors: [Colors.white, Colors.white70],
+                                  ).createShader(bounds),
+                                  child: const Icon(Icons.search, color: Colors.white),
+                                ),
+                                const SizedBox(width: 8),
+                                const Flexible(
                                   child: Text(
                                     'Cari barang dan lainnya',
                                     style: TextStyle(color: Colors.white, fontSize: 10),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
+                                ),
+                                IconButton(
+                                  icon: ShaderMask(
+                                    shaderCallback: (bounds) => const LinearGradient(
+                                      colors: [Colors.white, Colors.white70],
+                                    ).createShader(bounds),
+                                    child: const Icon(Icons.tune_rounded, color: Colors.white, size: 18),
+                                  ),
+                                  onPressed: () => context.push('/marketplace'),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
                                 ),
                               ],
                             ),
@@ -120,8 +136,22 @@ class _HomePageState extends State<HomePage> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.heroBannerTeal,
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.heroBannerTeal,
+                        AppColors.heroBannerTeal.withValues(alpha: 0.8),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.heroBannerTeal.withValues(alpha: 0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
@@ -145,20 +175,23 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(color: Colors.white, fontSize: 11),
                             ),
                             const SizedBox(height: 12),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.searchBarBackground,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text('Lihat', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                                    Icon(Icons.arrow_forward, color: Colors.white, size: 14),
-                                  ],
+                            GestureDetector(
+                              onTap: () => context.push('/marketplace?category=Disewakan'),
+                              child: Align(
+                                alignment: Alignment.bottomRight,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.searchBarBackground,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('Lihat', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      Icon(Icons.arrow_forward, color: Colors.white, size: 14),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -173,11 +206,23 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 12),
 
               // Kategori
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  'Kategori',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Kategori',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    ),
+                    GestureDetector(
+                      onTap: () => context.push('/categories'),
+                      child: const Text(
+                        'Lihat semua',
+                        style: TextStyle(fontSize: 13, color: AppColors.searchBarBackground, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 12),
@@ -229,6 +274,10 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 12),
               
               BlocBuilder<ProductBloc, ProductState>(
+                buildWhen: (previous, current) => 
+                    current is ProductLoading || 
+                    current is ProductLoaded || 
+                    current is ProductError,
                 builder: (context, state) {
                   if (state is ProductLoading) return const ProductListShimmer();
                   if (state is ProductLoaded) {

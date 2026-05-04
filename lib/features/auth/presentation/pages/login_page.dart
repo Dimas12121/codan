@@ -123,12 +123,12 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Continue with Google Button
+                  // Continue with Email Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        AppSnackBar.showInfo(context, 'Login via Google belum tersedia');
+                        context.push('/login-email');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -139,46 +139,19 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         elevation: 0,
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Custom Google icon representation
-                          Container(
-                            padding: const EdgeInsets.all(2),
-                            child: const Text(
-                              'G',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Continue with Google',
+                          Icon(Icons.email_outlined, size: 20),
+                          SizedBox(width: 12),
+                          Text(
+                            'Continue with Email',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Continue with Email Button (Text button or outline)
-                  TextButton(
-                    onPressed: () {
-                      context.push('/login-email');
-                    },
-                    child: const Text(
-                      'Login with Email',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        decoration: TextDecoration.underline,
                       ),
                     ),
                   ),

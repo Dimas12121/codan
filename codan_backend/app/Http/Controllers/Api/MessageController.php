@@ -42,6 +42,7 @@ class MessageController extends Controller
                         'id' => $partner->id,
                         'name' => $partner->name,
                         'avatar' => null,
+                        'wa_link' => $partner->wa_link,
                     ],
                     'last_message' => $message->message ?? 'Sent an image',
                     'unread_count' => Message::where('produk_id', $message->produk_id)
@@ -94,6 +95,7 @@ class MessageController extends Controller
             'partner' => [
                 'id' => $partner->id,
                 'name' => $partner->name,
+                'wa_link' => $partner->wa_link,
             ],
             'messages' => $messages
         ]);
@@ -191,5 +193,22 @@ class MessageController extends Controller
         }
 
         return response()->json(['success' => true, 'updated' => $updated]);
+    }
+
+    public function clear($produkId, $partnerId)
+    {
+        $userId = Auth::id();
+        
+        $deleted = Message::where('produk_id', $produkId)
+            ->where(function($q) use ($userId, $partnerId) {
+                $q->where(function($q2) use ($userId, $partnerId) {
+                    $q2->where('sender_id', $userId)->where('receiver_id', $partnerId);
+                })->orWhere(function($q2) use ($userId, $partnerId) {
+                    $q2->where('sender_id', $partnerId)->where('receiver_id', $userId);
+                });
+            })
+            ->delete();
+
+        return response()->json(['success' => true, 'deleted_count' => $deleted]);
     }
 }

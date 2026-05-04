@@ -12,12 +12,30 @@ use Illuminate\Notifications\Notifiable;
 
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'avatar', 'google_id', 'google_token', 'google_refresh_token', 'password', 'role', 'is_active', 'phone', 'is_phone_verified', 'phone_verified_at', 'location', 'bio'])]
+#[Fillable(['name', 'email', 'avatar', 'google_id', 'google_token', 'google_refresh_token', 'password', 'role', 'is_active', 'phone', 'is_phone_verified', 'phone_verified_at', 'location', 'latitude', 'longitude', 'bio'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    protected $appends = ['wa_link'];
+
+    public function getWaLinkAttribute()
+    {
+        if (!$this->phone) {
+            return null;
+        }
+
+        $digits = preg_replace('/[^0-9]/', '', $this->phone);
+        
+        // Convert leading 0 to 62
+        if (str_starts_with($digits, '0')) {
+            $digits = '62' . substr($digits, 1);
+        }
+
+        return "https://wa.me/" . $digits;
+    }
 
     /**
      * Get the attributes that should be cast.

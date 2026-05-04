@@ -114,12 +114,12 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
             AppSnackBar.showError(context, state.message);
           }
         },
-        child: Column(
-          children: [
-            // Top Section - Branding & Back Button
-            Expanded(
-              flex: 3,
-              child: Container(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Top Section - Branding & Back Button
+              Container(
+                height: MediaQuery.of(context).size.height * 0.35,
                 color: Colors.white,
                 child: SafeArea(
                   child: Stack(
@@ -158,19 +158,20 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                   ),
                 ),
               ),
-            ),
-            // Bottom Section - Phone/OTP Form
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFF2B37D4),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+              // Bottom Section - Phone/OTP Form
+              Container(
+                width: double.infinity,
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height * 0.65,
                 ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
-              child: SingleChildScrollView(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF2B37D4),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -290,8 +291,8 @@ class _LoginPhonePageState extends State<LoginPhonePage> {
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

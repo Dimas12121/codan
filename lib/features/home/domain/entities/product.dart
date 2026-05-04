@@ -13,6 +13,9 @@ class Product {
   final Seller seller;
   final bool isLiked;
 
+  final String type; // sell, rent
+  final String? rentalPeriod;
+
   Product({
     required this.id,
     required this.title,
@@ -26,6 +29,8 @@ class Product {
     required this.views,
     required this.messages,
     required this.seller,
+    this.type = 'sell',
+    this.rentalPeriod,
     this.isLiked = false,
   });
 
@@ -37,18 +42,18 @@ class Product {
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
       description: json['description'] ?? '',
       imageUrl: json['featured_image']?['image_path'] != null 
-          ? 'http://127.0.0.1:8000' + json['featured_image']['image_path'] // adjust base url accordingly
+          ? 'http://127.0.0.1:8000${json['featured_image']['image_path']}' 
           : null,
       category: json['category']?['name'] ?? '',
       condition: json['condition'] ?? 'used',
       location: json['location'] ?? '',
       views: json['views_count'] ?? 0,
-      messages: 0, // usually requires separate logic or count field
+      messages: 0,
       seller: Seller.fromJson(json['user'] ?? {}),
+      type: json['type'] ?? 'sell',
+      rentalPeriod: json['rental_period'],
     );
   }
-
-  get type => null;
 }
 
 class Seller {
@@ -72,7 +77,7 @@ class Seller {
     return Seller(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
-      avatarUrl: json['avatar'] != null ? 'http://127.0.0.1:8000/storage/' + json['avatar'] : null,
+      avatarUrl: json['avatar'] != null ? 'http://127.0.0.1:8000/storage/${json['avatar']}' : null,
       major: json['major'] ?? '-',
       rating: '5.0', // placeholder if not from backend
       isVerified: true, // placeholder

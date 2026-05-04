@@ -1,9 +1,11 @@
 import 'package:codan/features/product/presentation/bloc/product_bloc.dart';
 import 'package:codan/features/product/presentation/bloc/product_event.dart';
 import 'package:codan/features/product/presentation/bloc/product_state.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/app_snackbar.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -155,6 +157,68 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             color: Colors.grey.shade700,
                             height: 1.6,
                           ),
+                        ),
+                        // Review Section — only for non-owners
+                        BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, authState) {
+                            final currentUser = authState is Authenticated ? authState.user : null;
+                            final isOwnProduct = currentUser?.id != null &&
+                                (currentUser?.id == _currentProduct.seller.id ||
+                                    currentUser?.id == _currentProduct.userId);
+                            if (isOwnProduct) return const SizedBox();
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 28),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Ulasan Penjual',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    TextButton.icon(
+                                      onPressed: () => context.push(
+                                        '/reviews/${_currentProduct.seller.id}?name=${Uri.encodeComponent(_currentProduct.seller.name)}',
+                                      ),
+                                      icon: const Icon(Icons.star_border_rounded, size: 16),
+                                      label: const Text('Lihat Semua'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppColors.primary,
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () => context.push('/write-review', extra: {
+                                      'revieweeId': _currentProduct.seller.id,
+                                      'produkId': _currentProduct.id,
+                                      'sellerName': _currentProduct.seller.name,
+                                      'productName': _currentProduct.title,
+                                    }),
+                                    icon: const Icon(Icons.edit_outlined, size: 18),
+                                    label: const Text('Tulis Ulasan untuk Penjual'),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppColors.primary,
+                                      side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                         const SizedBox(height: 150), // Bottom space for bar
                       ],
@@ -330,65 +394,132 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
         final currentUser = authState is Authenticated ? authState.user : null;
+        final sellerName = (_currentProduct.seller.name == 'Penjual' && currentUser != null && (_currentProduct.seller.id == currentUser.id || _currentProduct.userId == currentUser.id))
+            ? currentUser.name
+            : _currentProduct.seller.name;
         
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade100),
+        return GestureDetector(
+          onTap: () => context.push(
+            '/seller-profile',
+            extra: _currentProduct.seller,
           ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 25,
-                backgroundImage: _currentProduct.seller.avatarUrl != null
-                    ? NetworkImage(_currentProduct.seller.avatarUrl!)
-                    : null,
-                child: _currentProduct.seller.avatarUrl == null
-                    ? const Icon(Icons.person, color: Colors.grey)
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            (_currentProduct.seller.name == 'Penjual' && currentUser != null && (_currentProduct.seller.id == currentUser.id || _currentProduct.userId == currentUser.id))
-                                ? currentUser.name
-                                : _currentProduct.seller.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey.shade100),
+            ),
+            child: Row(
+              children: [
+                _currentProduct.seller.avatarUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: _currentProduct.seller.avatarUrl!,
+                        imageBuilder: (context, imageProvider) => CircleAvatar(
+                          radius: 25,
+                          backgroundImage: imageProvider,
                         ),
-                        if (_currentProduct.seller.isVerified) ...[
-                          const SizedBox(width: 4),
-                          const Icon(Icons.verified, size: 16, color: Colors.blue),
+                        placeholder: (context, url) => CircleAvatar(
+                          radius: 25,
+                          backgroundColor: Colors.grey.shade200,
+                          child: const CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        errorWidget: (context, url, error) => CircleAvatar(
+                          radius: 25,
+                          backgroundColor: Colors.grey.shade200,
+                          child: const Icon(Icons.person, color: Colors.grey),
+                        ),
+                      )
+                    : CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Colors.grey.shade200,
+                        child: const Icon(Icons.person, color: Colors.grey),
+                      ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              sellerName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (_currentProduct.seller.isVerified) ...[
+                            const SizedBox(width: 4),
+                            const Icon(Icons.verified, size: 16, color: Colors.blue),
+                          ],
                         ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${_currentProduct.seller.major} • ⭐ ${_currentProduct.seller.rating}',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                    const SizedBox(height: 2),
                     Text(
-                      '${_currentProduct.seller.major} • ⭐ ${_currentProduct.seller.rating}',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      'Lihat Ulasan',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  Future<void> _openWhatsApp() async {
+    final phone = _currentProduct.seller.phone;
+    if (phone == null || phone.isEmpty) {
+      AppSnackBar.showError(context, 'Nomor WhatsApp penjual tidak tersedia');
+      return;
+    }
+
+    // Format number: remove non-digits, replace leading 0 with 62
+    var cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62${cleanPhone.substring(1)}';
+    }
+
+    final message = Uri.encodeComponent('Halo ${_currentProduct.seller.name}, saya tertarik dengan produk "${_currentProduct.title}" di CODan. Apakah masih tersedia?');
+    final url = Uri.parse('https://wa.me/$cleanPhone?text=$message');
+
+    try {
+      final launched = await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+      
+      if (!launched && mounted) {
+        AppSnackBar.showError(context, 'Gagal membuka WhatsApp. Pastikan aplikasi terpasang.');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.showError(context, 'Tidak dapat membuka WhatsApp: $e');
+      }
+    }
   }
 
   Widget _buildBottomBar(BuildContext context) {
@@ -469,7 +600,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           'produk_id': _currentProduct.id,
                           'partner_id': _currentProduct.seller.id,
                           'name': _currentProduct.seller.name,
-                          'avatar': _currentProduct.seller.avatarUrl ?? 'assets/images/user_placeholder.png',
+                          'avatar': _currentProduct.seller.avatarUrl ?? 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_currentProduct.seller.name)}&background=random&color=fff',
                         });
                       },
                       child: Container(
@@ -485,17 +616,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     Expanded(
                       flex: 2,
                       child: OutlinedButton.icon(
-                        onPressed: () {
-                          AppSnackBar.showInfo(context, 'Fitur keranjang segera hadir!');
-                        },
-                        icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                        onPressed: _openWhatsApp,
+                        icon: Icon(Icons.chat_outlined, size: 20, color: Colors.green),
                         label: const FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text('Cart'),
+                          child: Text('WA'),
                         ),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                          side: const BorderSide(color: AppColors.primary),
+                          side: const BorderSide(color: Colors.green),
+                          foregroundColor: Colors.green,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         ),
                       ),

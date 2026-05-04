@@ -4,11 +4,13 @@ import '../../../../core/constants/app_constants.dart';
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
+  final bool isSeller;
 
   const AppBottomNav({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.isSeller = true,
   });
 
   @override
@@ -22,7 +24,7 @@ class AppBottomNav extends StatelessWidget {
         children: [
           CustomPaint(
             size: Size(MediaQuery.of(context).size.width, 90),
-            painter: NavbarPainter(),
+            painter: NavbarPainter(isSeller: isSeller),
           ),
           Positioned(
             bottom: 10,
@@ -33,7 +35,7 @@ class AppBottomNav extends StatelessWidget {
               children: [
                 _buildNavItem(0, Icons.home_filled, 'HOME'),
                 _buildNavItem(1, Icons.list_alt_rounded, 'SEWA'),
-                const SizedBox(width: 60), // Space for FAB
+                if (isSeller) const SizedBox(width: 60) else const SizedBox(width: 20),
                 _buildNavItem(3, Icons.chat_bubble_outline_rounded, 'CHAT'),
                 _buildNavItem(4, Icons.person_outline_rounded, 'PROFILE'),
               ],
@@ -87,6 +89,10 @@ class AppBottomNav extends StatelessWidget {
 }
 
 class NavbarPainter extends CustomPainter {
+  final bool isSeller;
+
+  NavbarPainter({this.isSeller = true});
+
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
@@ -107,17 +113,22 @@ class NavbarPainter extends CustomPainter {
     path.lineTo(size.width, cornerRadius);
     path.quadraticBezierTo(size.width, 0, size.width - cornerRadius, 0);
     
-    // Line to the start of the notch curve
-    double startNotch = (size.width - notchWidth) / 2;
-    path.lineTo(startNotch + curveWidth, 0);
-    
-    // Notch curve (smooth concave)
-    path.quadraticBezierTo(
-      startNotch + notchWidth / 2,
-      notchHeight,
-      size.width - (startNotch + curveWidth),
-      0,
-    );
+    if (isSeller) {
+      // Line to the start of the notch curve
+      double startNotch = (size.width - notchWidth) / 2;
+      path.lineTo(startNotch + curveWidth, 0);
+      
+      // Notch curve (smooth concave)
+      path.quadraticBezierTo(
+        startNotch + notchWidth / 2,
+        notchHeight,
+        size.width - (startNotch + curveWidth),
+        0,
+      );
+    } else {
+      // Straight line across the top
+      path.lineTo(cornerRadius, 0);
+    }
 
     // Line to top left (rounded)
     path.lineTo(cornerRadius, 0);
@@ -130,5 +141,5 @@ class NavbarPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant NavbarPainter oldDelegate) => oldDelegate.isSeller != isSeller;
 }

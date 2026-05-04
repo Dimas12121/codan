@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/constants/app_constants.dart';
 
 class ChatPartner extends Equatable {
   final int id;
@@ -12,10 +13,14 @@ class ChatPartner extends Equatable {
   });
 
   factory ChatPartner.fromJson(Map<String, dynamic> json) {
+    String? avatarPath = json['avatar'];
+    if (avatarPath != null && !avatarPath.startsWith('http')) {
+      avatarPath = '${AppConstants.baseUrl.replaceAll(RegExp(r'/api$'), '')}/storage/$avatarPath';
+    }
     return ChatPartner(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       name: json['name'] ?? json['full_name'] ?? json['nama'] ?? 'Pengguna',
-      avatar: json['avatar'],
+      avatar: avatarPath,
     );
   }
 
@@ -37,11 +42,15 @@ class ChatProduk extends Equatable {
   });
 
   factory ChatProduk.fromJson(Map<String, dynamic> json) {
+    String? imagePath = json['image'] ?? json['featured_image']?['image_path'];
+    if (imagePath != null && !imagePath.startsWith('http')) {
+      imagePath = '${AppConstants.baseUrl.replaceAll(RegExp(r'/api$'), '')}/storage/$imagePath';
+    }
     return ChatProduk(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       title: json['title'] ?? '',
-      image: json['image'],
-      price: json['price'],
+      image: imagePath,
+      price: json['price'] != null ? (num.tryParse(json['price'].toString()) ?? 0) : null,
     );
   }
 
@@ -70,11 +79,11 @@ class ChatConversation extends Equatable {
 
   factory ChatConversation.fromJson(Map<String, dynamic> json) {
     return ChatConversation(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       produk: ChatProduk.fromJson(json['produk'] ?? {}),
       partner: ChatPartner.fromJson(json['partner'] ?? {}),
       lastMessage: json['last_message'] ?? '',
-      unreadCount: json['unread_count'] ?? 0,
+      unreadCount: int.tryParse(json['unread_count']?.toString() ?? '0') ?? 0,
       createdAt: json['created_at'] ?? '',
       timestamp: json['timestamp'] ?? '',
     );

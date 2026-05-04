@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/api/api_client.dart';
 import '../../domain/entities/user.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import 'package:codan/core/utils/app_snackbar.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,6 +23,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final ImagePicker _picker = ImagePicker();
+  bool _isUpdatingLocation = false;
 
   Future<void> _updateAvatar() async {
     final XFile? image = await _picker.pickImage(
@@ -31,109 +38,94 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _showEditProfileDialog(User user) {
-    final nameController = TextEditingController(text: user.name);
-    final phoneController = TextEditingController(text: user.phone);
-    final bioController = TextEditingController(text: user.bio);
+  Future<void> _updateLocation() async {
+    setState(() => _isUpdatingLocation = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) throw 'Layanan lokasi tidak aktif.';
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 20,
-          left: 20,
-          right: 20,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Edit Profil',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              _buildTextField('Nama Lengkap', nameController),
-              const SizedBox(height: 16),
-              _buildTextField('Nomor Telepon', phoneController),
-              const SizedBox(height: 16),
-              _buildTextField('Bio', bioController, maxLines: 3),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    context.read<AuthBloc>().add(AuthUpdateProfileRequested({
-                      'name': nameController.text,
-                      'phone': phoneController.text,
-                      'bio': bioController.text,
-                    }));
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  child: const Text('Simpan Perubahan', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ),
-              const SizedBox(height: 40),
-            ],
-          ),
-        ),
-      ),
-    );
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) throw 'Izin lokasi ditolak.';
+      }
+
+      if (permission == LocationPermission.deniedForever) throw 'Izin lokasi ditolak permanen.';
+
+      Position position = await Geolocator.getCurrentPosition();
+
+      // Reverse Geocoding untuk mendapatkan nama kota
+      String locationName = 'Lokasi tidak diketahui';
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+        
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          String city = place.locality ?? '';
+          String regency = place.subAdministrativeArea ?? '';
+          
+          if (city.isNotEmpty && regency.isNotEmpty) {
+            locationName = "$city, $regency";
+          } else {
+            locationName = city.isNotEmpty ? city : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
+          }
+        }
+      } catch (e) {
+        debugPrint("Error geocoding fallback to Nominatim: $e");
+        try {
+          final dio = context.read<ApiClient>().dio;
+          final response = await dio.get(
+            'https://nominatim.openstreetmap.org/reverse',
+            queryParameters: {
+              'format': 'json',
+              'lat': position.latitude,
+              'lon': position.longitude,
+            },
+          );
+          if (response.data != null && response.data['address'] != null) {
+            final address = response.data['address'];
+            String city = address['city'] ?? address['town'] ?? address['village'] ?? '';
+            String regency = address['county'] ?? address['state'] ?? '';
+            
+            if (city.isNotEmpty && regency.isNotEmpty) {
+              locationName = "$city, $regency";
+            } else {
+              locationName = city.isNotEmpty ? city : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
+            }
+          }
+        } catch (fallbackError) {
+          debugPrint("Fallback geocoding juga gagal: $fallbackError");
+        }
+      }
+
+      if (!mounted) return;
+
+      context.read<AuthBloc>().add(AuthUpdateProfileRequested({
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'location': locationName,
+      }));
+      
+      AppSnackBar.showSuccess(context, 'Lokasi berhasil diperbarui!');
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.showError(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _isUpdatingLocation = false);
+    }
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.grey[50],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
-            ),
-          ),
-        ),
-      ],
-    );
+  Future<void> _openInGoogleMaps(double lat, double lng) async {
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -147,6 +139,10 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: AppColors.textPrimary),
+            onPressed: () => context.push('/settings'),
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.error),
             onPressed: () => _confirmLogout(context),
@@ -196,7 +192,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ? user.profilePhoto! 
                             : '${AppConstants.baseUrl}/storage/${user.profilePhoto}',
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildPlaceholderAvatar(user),
+                          errorBuilder: (ctx, e, st) => _buildPlaceholderAvatar(user),
                         )
                       : _buildPlaceholderAvatar(user),
                 ),
@@ -239,17 +235,27 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: _buildHeaderAction(
                     icon: Icons.edit_note_rounded,
                     label: 'Edit Profil',
-                    onTap: () => _showEditProfileDialog(user),
+                    onTap: () => context.push('/edit-profile'),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _buildHeaderAction(
                     icon: Icons.shopping_bag_outlined,
                     label: 'Pesanan Saya',
-                    onTap: () {},
+                    onTap: () => context.push('/my-orders'),
                   ),
                 ),
+                if (user.role == 'seller') ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildHeaderAction(
+                      icon: Icons.local_offer_outlined,
+                      label: 'Penawaran',
+                      onTap: () => context.push('/seller-offers'),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -259,15 +265,94 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildSectionTitle('Informasi Akun'),
           _buildInfoTile(Icons.email_outlined, 'Email', user.email),
           _buildInfoTile(Icons.phone_outlined, 'Nomor HP', user.phone),
-          _buildInfoTile(Icons.location_on_outlined, 'Lokasi', user.location ?? 'Belum diatur'),
+          _buildInfoTile(
+            Icons.location_on_outlined, 
+            'Lokasi', 
+            user.location ?? 'Belum diatur',
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (user.latitude != null && user.longitude != null)
+                  IconButton(
+                    icon: const Icon(Icons.map_outlined, color: Colors.green, size: 20),
+                    onPressed: () => _openInGoogleMaps(user.latitude!, user.longitude!),
+                    tooltip: 'Lihat di Peta',
+                  ),
+                _isUpdatingLocation 
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.my_location, color: AppColors.primary, size: 20),
+                      onPressed: _updateLocation,
+                      tooltip: 'Perbarui Lokasi',
+                    ),
+              ],
+            ),
+          ),
+          
+          if (user.latitude != null && user.longitude != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: SizedBox(
+                  height: 180,
+                  width: double.infinity,
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(user.latitude!, user.longitude!),
+                          zoom: 15,
+                        ),
+                        markers: {
+                          Marker(
+                            markerId: const MarkerId('current_loc'),
+                            position: LatLng(user.latitude!, user.longitude!),
+                          ),
+                        },
+                        zoomControlsEnabled: false,
+                        myLocationButtonEnabled: false,
+                        liteModeEnabled: false,
+                        onTap: (_) => _openInGoogleMaps(user.latitude!, user.longitude!),
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: FloatingActionButton.small(
+                          heroTag: 'map_btn',
+                          onPressed: () => _openInGoogleMaps(user.latitude!, user.longitude!),
+                          backgroundColor: Colors.white,
+                          child: const Icon(Icons.open_in_new, color: AppColors.primary, size: 18),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           
           const SizedBox(height: 24),
           _buildSectionTitle('Lainnya'),
+          _buildMenuTile(
+            user.role == 'seller' ? Icons.person_outline : Icons.storefront_outlined,
+            user.role == 'seller' ? 'Beralih ke Pembeli' : 'Beralih ke Penjual',
+            () {
+              context.read<AuthBloc>().add(
+                AuthUpdateProfileRequested({'role': user.role == 'seller' ? 'buyer' : 'seller'}),
+              );
+            },
+          ),
           _buildMenuTile(Icons.favorite_border, 'Favorit Saya', () => context.push('/wishlist')),
+          _buildMenuTile(Icons.star_border_rounded, 'Ulasan Saya', () => context.push('/reviews/${user.id}?name=${Uri.encodeComponent(user.name)}')),
+          if (user.role == 'seller')
+            _buildMenuTile(Icons.store_outlined, 'Produk Saya', () => context.push('/my-products')),
           _buildMenuTile(Icons.help_outline, 'Pusat Bantuan', () {}),
           _buildMenuTile(Icons.info_outline, 'Tentang CODAN', () {}),
           
-          const SizedBox(height: 40),
+          const SizedBox(height: 140), // Extra padding for bottom app button
         ],
       ),
     );
@@ -318,7 +403,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildInfoTile(IconData icon, String label, String value) {
+  Widget _buildInfoTile(IconData icon, String label, String value, {Widget? trailing}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Row(
@@ -338,6 +423,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           ),
+          trailing ?? const SizedBox.shrink(),
         ],
       ),
     );

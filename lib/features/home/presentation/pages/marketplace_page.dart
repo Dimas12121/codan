@@ -34,19 +34,122 @@ class _MarketplacePageState extends State<MarketplacePage> {
     'Lainnya',
   ];
 
+  String _selectedType = 'Semua';
+  String _selectedCondition = 'Semua';
+
   @override
   void initState() {
     super.initState();
     _selectedCategory = widget.initialCategory ?? 'Semua';
+    // If initial category is a type or condition, handle it
+    if (['rent', 'sell'].contains(_selectedCategory.toLowerCase())) {
+      _selectedType = _selectedCategory;
+      _selectedCategory = 'Semua';
+    }
     context.read<ProductBloc>().add(const LoadProducts());
   }
 
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Filter', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      TextButton(
+                        onPressed: () {
+                          setModalState(() {
+                            _selectedType = 'Semua';
+                            _selectedCondition = 'Semua';
+                          });
+                        },
+                        child: const Text('Reset'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('Tipe Iklan', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: ['Semua', 'Jual', 'Sewa'].map((t) {
+                      final isSel = _selectedType == t;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(t),
+                          selected: isSel,
+                          onSelected: (s) => setModalState(() => _selectedType = t),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('Kondisi', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: ['Semua', 'Baru', 'Bekas'].map((c) {
+                      final isSel = _selectedCondition == c;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(c),
+                          selected: isSel,
+                          onSelected: (s) => setModalState(() => _selectedCondition = c),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {});
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      ),
+                      child: const Text('Terapkan Filter'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   List<Product> _getFilteredProducts(List<Product> allProducts) {
-    if (_selectedCategory == 'Semua') return allProducts;
     return allProducts.where((p) {
-      final matchesCategory = p.category.toLowerCase() == _selectedCategory.toLowerCase();
-      final matchesCondition = p.condition.toLowerCase().contains(_selectedCategory.toLowerCase());
-      return matchesCategory || matchesCondition;
+      final matchesCategory = _selectedCategory == 'Semua' || 
+          p.category.toLowerCase() == _selectedCategory.toLowerCase();
+          
+      final matchesType = _selectedType == 'Semua' || 
+          p.type.toLowerCase() == (_selectedType == 'Sewa' ? 'rent' : 'sell');
+          
+      final matchesCondition = _selectedCondition == 'Semua' || 
+          p.condition.toLowerCase().contains(_selectedCondition.toLowerCase());
+          
+      return matchesCategory && matchesType && matchesCondition;
     }).toList();
   }
 
@@ -70,21 +173,28 @@ class _MarketplacePageState extends State<MarketplacePage> {
             icon: const Icon(Icons.search, color: AppColors.textPrimary),
             onPressed: () => context.push('/search'),
           ),
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: AppColors.primary),
+            onPressed: () => _showFilterBottomSheet(),
+          ),
         ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Filter Chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: _categories.map((cat) {
+          // Horizontal Category List
+          SizedBox(
+            height: 50,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _categories.length,
+              itemBuilder: (context, index) {
+                final cat = _categories[index];
                 final isSelected = _selectedCategory == cat;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
+                  child: ChoiceChip(
                     label: Text(cat),
                     selected: isSelected,
                     onSelected: (selected) {
@@ -93,7 +203,6 @@ class _MarketplacePageState extends State<MarketplacePage> {
                       });
                     },
                     selectedColor: AppColors.primary,
-                    checkmarkColor: Colors.white,
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : AppColors.textSecondary,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -101,13 +210,13 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     backgroundColor: Colors.grey.shade50,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(color: isSelected ? AppColors.primary : Colors.grey.shade100),
                     ),
                   ),
                 );
-              }).toList(),
+              },
             ),
           ),
+          const Divider(height: 1),
           Expanded(
             child: BlocBuilder<ProductBloc, ProductState>(
               buildWhen: (previous, current) =>

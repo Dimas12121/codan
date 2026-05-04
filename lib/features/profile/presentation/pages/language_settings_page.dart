@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:codan/core/constants/app_constants.dart';
+import 'package:codan/core/utils/app_snackbar.dart';
 
 class LanguageSettingsPage extends StatefulWidget {
   const LanguageSettingsPage({super.key});
@@ -33,13 +34,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
     });
     
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(code == 'id' ? 'Bahasa diubah ke Indonesia' : 'Language changed to English'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 1),
-        ),
-      );
+      AppSnackBar.showSuccess(context, code == 'id' ? 'Bahasa diubah ke Indonesia' : 'Language changed to English');
     }
   }
 

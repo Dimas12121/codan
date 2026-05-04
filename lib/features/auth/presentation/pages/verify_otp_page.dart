@@ -316,8 +316,9 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
                     ),
                     const SizedBox(height: 24),
                     // Resend Option
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         const Text(
                           "Tidak menerima kode? ",
@@ -343,7 +344,7 @@ class _VerifyOTPPageState extends State<VerifyOTPPage> {
                       child: Text(
                         'Dengan melanjutkan, Anda setuju dengan Syarat & Ketentuan serta Kebijakan Privasi kami.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           color: Colors.black45,
                           height: 1.4,
