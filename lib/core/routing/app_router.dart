@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/auth/auth.dart';
+import '../../features/auth/presentation/pages/location_verification_page.dart';
 import '../../features/home/home.dart';
 import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/chat/chat.dart';
@@ -90,6 +91,10 @@ class AppRouter {
             onVerify: extras['onVerify'] as Function(String)?,
           );
         },
+      ),
+      GoRoute(
+        path: '/location-verification',
+        builder: (context, state) => const LocationVerificationPage(),
       ),
       GoRoute(
         path: '/profile',

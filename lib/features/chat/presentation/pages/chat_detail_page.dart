@@ -33,8 +33,10 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   bool _forceScrollToBottom = false;
   bool _isGettingLocation = false;
 
-  int get produkId => int.tryParse(widget.chatItem['produk_id']?.toString() ?? '') ?? 0;
-  int get partnerId => int.tryParse(widget.chatItem['partner_id']?.toString() ?? '') ?? 0;
+  int get produkId =>
+      int.tryParse(widget.chatItem['produk_id']?.toString() ?? '') ?? 0;
+  int get partnerId =>
+      int.tryParse(widget.chatItem['partner_id']?.toString() ?? '') ?? 0;
   String get partnerName => widget.chatItem['name']?.toString() ?? 'Pengguna';
   String get avatarUrl => widget.chatItem['avatar']?.toString() ?? '';
 
@@ -65,7 +67,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       final pos = _scrollController.position;
       // Scroll if forced OR if user is already near the bottom (within 100px)
       final bool isNearBottom = pos.pixels >= pos.maxScrollExtent - 100;
-      
+
       if (force || isNearBottom) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -80,11 +82,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
-    context.read<ChatBloc>().add(SendMessage(
-      produkId: produkId,
-      receiverId: partnerId,
-      message: text,
-    ));
+    context.read<ChatBloc>().add(
+      SendMessage(produkId: produkId, receiverId: partnerId, message: text),
+    );
     _messageController.clear();
   }
 
@@ -96,16 +96,21 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     if (picked == null || !mounted) return;
 
     setState(() => _isSendingImage = true);
-    context.read<ChatBloc>().add(SendMessage(
-      produkId: produkId,
-      receiverId: partnerId,
-      image: File(picked.path),
-    ));
+    context.read<ChatBloc>().add(
+      SendMessage(
+        produkId: produkId,
+        receiverId: partnerId,
+        image: File(picked.path),
+      ),
+    );
   }
 
   Future<void> _sendLocation() async {
     setState(() => _isGettingLocation = true);
     try {
+      // Store context before async operations
+      final chatBloc = context.read<ChatBloc>();
+
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw 'Layanan lokasi tidak aktif.';
@@ -124,16 +129,18 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       }
 
       Position position = await Geolocator.getCurrentPosition();
-      
+
       if (!mounted) return;
-      
-      context.read<ChatBloc>().add(SendMessage(
-        produkId: produkId,
-        receiverId: partnerId,
-        latitude: position.latitude,
-        longitude: position.longitude,
-        message: '📍 Membagikan lokasi',
-      ));
+
+      chatBloc.add(
+        SendMessage(
+          produkId: produkId,
+          receiverId: partnerId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          message: '📍 Membagikan lokasi',
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       AppSnackBar.showError(context, e.toString());
@@ -143,7 +150,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   }
 
   Future<void> _openInGoogleMaps(double lat, double lng) async {
-    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -172,7 +181,11 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               ),
               child: IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.chevron_left, color: Colors.white, size: 30),
+                icon: const Icon(
+                  Icons.chevron_left,
+                  color: Colors.white,
+                  size: 30,
+                ),
                 onPressed: () => context.pop(),
               ),
             ),
@@ -182,10 +195,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           children: [
             CachedNetworkImage(
               imageUrl: avatarUrl,
-              imageBuilder: (context, imageProvider) => CircleAvatar(
-                radius: 20,
-                backgroundImage: imageProvider,
-              ),
+              imageBuilder: (context, imageProvider) =>
+                  CircleAvatar(radius: 20, backgroundImage: imageProvider),
               placeholder: (context, url) => CircleAvatar(
                 radius: 20,
                 backgroundColor: Colors.grey.shade200,
@@ -224,11 +235,17 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           PopupMenuButton<String>(
             onSelected: (value) async {
               if (value == 'delete') {
+                // Store references before async operation
+                final chatBloc = context.read<ChatBloc>();
+                final navigator = Navigator.of(context);
+
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Hapus Chat'),
-                    content: const Text('Apakah Anda yakin ingin menghapus seluruh riwayat chat ini?'),
+                    content: const Text(
+                      'Apakah Anda yakin ingin menghapus seluruh riwayat chat ini?',
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -236,7 +253,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.red,
+                        ),
                         child: const Text('Hapus'),
                       ),
                     ],
@@ -244,8 +263,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 );
 
                 if (confirm == true && mounted) {
-                  context.read<ChatBloc>().add(DeleteChatHistory(produkId, partnerId));
-                  context.pop(); // Go back to chat list after deletion
+                  chatBloc.add(DeleteChatHistory(produkId, partnerId));
+                  navigator.pop(); // Go back to chat list after deletion
                 }
               }
             },
@@ -281,14 +300,20 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               listener: (context, state) {
                 if (state is ChatMessagesLoaded) {
                   // Mark as read only if there are unread messages from the partner
-                  final hasUnread = state.messages.any((msg) => !msg.isRead && msg.senderId == partnerId);
+                  final hasUnread = state.messages.any(
+                    (msg) => !msg.isRead && msg.senderId == partnerId,
+                  );
                   if (hasUnread) {
-                    context.read<ChatBloc>().add(MarkMessagesAsRead(produkId, partnerId));
+                    context.read<ChatBloc>().add(
+                      MarkMessagesAsRead(produkId, partnerId),
+                    );
                   }
-                  
+
                   // Scroll to bottom after frame renders
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _scrollToBottom(force: _isFirstLoad || _forceScrollToBottom);
+                    _scrollToBottom(
+                      force: _isFirstLoad || _forceScrollToBottom,
+                    );
                     if (_isFirstLoad || _forceScrollToBottom) {
                       setState(() {
                         _isFirstLoad = false;
@@ -306,12 +331,17 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 }
                 if (state is ChatMessageSendError) {
                   setState(() => _isSendingImage = false);
-                  AppSnackBar.showError(context, 'Gagal mengirim pesan: ${state.message}');
+                  AppSnackBar.showError(
+                    context,
+                    'Gagal mengirim pesan: ${state.message}',
+                  );
                 }
               },
               builder: (context, state) {
                 if (state is ChatMessagesLoading) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  );
                 } else if (state is ChatMessagesError) {
                   return Center(
                     child: Padding(
@@ -319,11 +349,15 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                          const Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Colors.red,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             partnerId == 0
-                                ? 'Kamu adalah penjualnya, tidak bisa chat sama diri sendiri.' 
+                                ? 'Kamu adalah penjualnya, tidak bisa chat sama diri sendiri.'
                                 : 'Error: ${state.message}',
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.red),
@@ -334,11 +368,13 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   );
                 } else if (state is ChatMessagesLoaded) {
                   final messages = state.messages;
-                  
+
                   if (messages.isEmpty) {
                     return const Center(
-                      child: Text('Belum ada pesan. Mulai obrolan sekarang!',
-                          style: TextStyle(color: Colors.grey)),
+                      child: Text(
+                        'Belum ada pesan. Mulai obrolan sekarang!',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     );
                   }
 
@@ -348,13 +384,16 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       final msg = messages[index];
-                      final isMe = msg.senderId != partnerId; // If sender is not partner, it's me
+                      final isMe =
+                          msg.senderId !=
+                          partnerId; // If sender is not partner, it's me
 
                       // Parse simple time from createdAt (assuming "YYYY-MM-DD HH:MM:SS" or similar)
                       String timeStr = '';
                       try {
                         final dt = DateTime.parse(msg.createdAt).toLocal();
-                        timeStr = '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+                        timeStr =
+                            '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
                       } catch (_) {
                         timeStr = '...';
                       }
@@ -373,7 +412,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     },
                   );
                 }
-                return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                );
               },
             ),
           ),
@@ -403,7 +444,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           maxWidth: MediaQuery.of(context).size.width * 0.7,
         ),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             if (imagePath != null && imagePath.isNotEmpty)
               GestureDetector(
@@ -425,7 +468,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                         if (progress == null) return child;
                         return const SizedBox(
                           height: 120,
-                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          child: Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                         );
                       },
                     ),
@@ -463,7 +508,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                 mapToolbarEnabled: true,
                                 myLocationButtonEnabled: true,
                                 liteModeEnabled: false,
-                                onTap: (_) => _openInGoogleMaps(latitude, longitude),
+                                onTap: (_) =>
+                                    _openInGoogleMaps(latitude, longitude),
                               ),
                             ],
                           ),
@@ -473,11 +519,19 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.map_outlined, size: 14, color: Colors.blue),
+                          const Icon(
+                            Icons.map_outlined,
+                            size: 14,
+                            color: Colors.blue,
+                          ),
                           const SizedBox(width: 4),
                           const Text(
                             'Buka di Google Maps',
-                            style: TextStyle(fontSize: 11, color: Colors.blue, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -502,10 +556,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   const SizedBox(width: 8),
                   Text(
                     time,
-                    style: const TextStyle(
-                      color: Colors.black45,
-                      fontSize: 10,
-                    ),
+                    style: const TextStyle(color: Colors.black45, fontSize: 10),
                   ),
                 ],
               )
@@ -540,7 +591,11 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               child: Image.network(
                 url,
                 fit: BoxFit.contain,
-                errorBuilder: (ctx, e, st) => const Icon(Icons.broken_image, color: Colors.white, size: 64),
+                errorBuilder: (ctx, e, st) => const Icon(
+                  Icons.broken_image,
+                  color: Colors.white,
+                  size: 64,
+                ),
               ),
             ),
           ),
@@ -552,9 +607,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   Widget _buildMessageInput() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -566,7 +619,10 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -598,7 +654,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 IconButton(
                   icon: Icon(
                     Icons.image_outlined,
-                    color: _isSendingImage ? Colors.grey[300] : const Color(0xFF2B37D4),
+                    color: _isSendingImage
+                        ? Colors.grey[300]
+                        : const Color(0xFF2B37D4),
                   ),
                   onPressed: _isSendingImage ? null : _sendImage,
                   tooltip: 'Kirim Gambar',
@@ -606,7 +664,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 IconButton(
                   icon: Icon(
                     Icons.location_on_outlined,
-                    color: _isGettingLocation ? Colors.grey[300] : const Color(0xFF2B37D4),
+                    color: _isGettingLocation
+                        ? Colors.grey[300]
+                        : const Color(0xFF2B37D4),
                   ),
                   onPressed: _isGettingLocation ? null : _sendLocation,
                   tooltip: 'Kirim Lokasi',

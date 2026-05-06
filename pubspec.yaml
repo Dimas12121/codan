@@ -95,6 +95,7 @@ flutter:
     - assets/images/
     - assets/images/avatars/
     - assets/images/splash_logo.png
+    - assets/images/category/
     - .env
     - .env.development
     - .env.staging

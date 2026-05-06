@@ -27,7 +27,8 @@ class _MainPageState extends State<MainPage> {
   bool _isShowingLocationSheet = false;
 
   void _checkLocationEnforcement(User user) {
-    if ((user.latitude == null || user.longitude == null) && !_isShowingLocationSheet) {
+    if ((user.latitude == null || user.longitude == null) &&
+        !_isShowingLocationSheet) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showLocationRequiredSheet(user);
       });
@@ -37,7 +38,7 @@ class _MainPageState extends State<MainPage> {
   void _showLocationRequiredSheet(User user) {
     if (!mounted) return;
     setState(() => _isShowingLocationSheet = true);
-    
+
     showModalBottomSheet(
       context: context,
       isDismissible: false,
@@ -59,7 +60,11 @@ class _MainPageState extends State<MainPage> {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 30),
+              child: const Icon(
+                Icons.location_on_rounded,
+                color: AppColors.primary,
+                size: 30,
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -80,9 +85,17 @@ class _MainPageState extends State<MainPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('Verifikasi Sekarang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Verifikasi Sekarang',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -96,10 +109,16 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _handleUpdateLocation(BuildContext context) async {
     try {
+      // Store context before async operations
+      final authBloc = context.read<AuthBloc>();
+      final apiClient = context.read<ApiClient>();
+
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) throw 'Izin lokasi ditolak.';
+        if (permission == LocationPermission.denied) {
+          throw 'Izin lokasi ditolak.';
+        }
       }
 
       Position position = await Geolocator.getCurrentPosition();
@@ -111,23 +130,24 @@ class _MainPageState extends State<MainPage> {
           position.latitude,
           position.longitude,
         );
-        
+
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
           String city = place.locality ?? '';
           String regency = place.subAdministrativeArea ?? '';
-          
+
           if (city.isNotEmpty && regency.isNotEmpty) {
             locationName = "$city, $regency";
           } else {
-            locationName = city.isNotEmpty ? city : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
+            locationName = city.isNotEmpty
+                ? city
+                : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
           }
         }
       } catch (e) {
         debugPrint("Error geocoding fallback to Nominatim: $e");
         try {
-          final dio = context.read<ApiClient>().dio;
-          final response = await dio.get(
+          final response = await apiClient.dio.get(
             'https://nominatim.openstreetmap.org/reverse',
             queryParameters: {
               'format': 'json',
@@ -137,13 +157,16 @@ class _MainPageState extends State<MainPage> {
           );
           if (response.data != null && response.data['address'] != null) {
             final address = response.data['address'];
-            String city = address['city'] ?? address['town'] ?? address['village'] ?? '';
+            String city =
+                address['city'] ?? address['town'] ?? address['village'] ?? '';
             String regency = address['county'] ?? address['state'] ?? '';
-            
+
             if (city.isNotEmpty && regency.isNotEmpty) {
               locationName = "$city, $regency";
             } else {
-              locationName = city.isNotEmpty ? city : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
+              locationName = city.isNotEmpty
+                  ? city
+                  : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
             }
           }
         } catch (fallbackError) {
@@ -153,15 +176,16 @@ class _MainPageState extends State<MainPage> {
 
       if (!context.mounted) return;
 
-      context.read<AuthBloc>().add(AuthUpdateProfileRequested({
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-        'location': locationName,
+      authBloc.add(
+        AuthUpdateProfileRequested({
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'location': locationName,
+        }),
+      );
 
-      }));
-      
       Navigator.pop(context); // Close sheet
-      
+
       AppSnackBar.showSuccess(context, 'Lokasi berhasil diverifikasi!');
     } catch (e) {
       AppSnackBar.showError(context, e.toString());
@@ -171,7 +195,8 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
-    final isSeller = authState is Authenticated && authState.user.role == 'seller';
+    final isSeller =
+        authState is Authenticated && authState.user.role == 'seller';
 
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
@@ -181,7 +206,9 @@ class _MainPageState extends State<MainPage> {
           }
         },
         child: IndexedStack(
-          index: _currentIndex == 2 ? 0 : _currentIndex, // For now keep home if sell clicked via FAB
+          index: _currentIndex == 2
+              ? 0
+              : _currentIndex, // For now keep home if sell clicked via FAB
           children: [
             const HomePage(),
             const RentPage(),
@@ -191,29 +218,29 @@ class _MainPageState extends State<MainPage> {
           ],
         ),
       ),
-      floatingActionButton: isSeller 
-        ? SizedBox(
-            height: 75,
-            width: 75,
-            child: FloatingActionButton(
-              heroTag: 'main_add_fab',
-              onPressed: () {
-                context.push('/add-product');
-              },
-              backgroundColor: AppColors.navbarActive,
-              shape: const CircleBorder(),
-              elevation: 5,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white, width: 2),
-                  borderRadius: BorderRadius.circular(8),
+      floatingActionButton: isSeller
+          ? SizedBox(
+              height: 75,
+              width: 75,
+              child: FloatingActionButton(
+                heroTag: 'main_add_fab',
+                onPressed: () {
+                  context.push('/add-product');
+                },
+                backgroundColor: AppColors.navbarActive,
+                shape: const CircleBorder(),
+                elevation: 5,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 24),
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 24),
               ),
-            ),
-          )
-        : const SizedBox.shrink(),
+            )
+          : const SizedBox.shrink(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       extendBody: true,
       bottomNavigationBar: AppBottomNav(

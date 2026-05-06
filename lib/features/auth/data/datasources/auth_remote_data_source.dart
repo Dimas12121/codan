@@ -56,7 +56,9 @@ class AuthRemoteDataSource {
     String role = 'buyer',
   }) async {
     try {
-      debugPrint('Calling registration endpoint: ${AppConstants.registerWithPhoneEndpoint}');
+      debugPrint(
+        'Calling registration endpoint: ${AppConstants.registerWithPhoneEndpoint}',
+      );
       final response = await apiClient.dio.post(
         AppConstants.registerWithPhoneEndpoint,
         data: {
@@ -141,12 +143,8 @@ class AuthRemoteDataSource {
     try {
       final response = await apiClient.dio.post(
         AppConstants.verifyOtpEndpoint,
-        data: {
-          'phone': phone,
-          'otp': otp,
-          'email': email,
-          'purpose': purpose,
-        }..removeWhere((_, v) => v == null),
+        data: {'phone': phone, 'otp': otp, 'email': email, 'purpose': purpose}
+          ..removeWhere((_, v) => v == null),
       );
 
       return ApiResponse<Map<String, dynamic>>.fromJson(
@@ -215,28 +213,37 @@ class AuthRemoteDataSource {
       throw ErrorResponse.fromDioException(e);
     }
   }
+
   // Update profile
   Future<ApiResponse<Map<String, dynamic>>> updateProfile(
     Map<String, dynamic> data,
   ) async {
     try {
+      debugPrint('Updating profile with data: $data');
+
       final Map<String, dynamic> formDataMap = Map<String, dynamic>.from(data);
-      
+
+      // Handle avatar file upload
       if (data.containsKey('avatar') && data['avatar'] != null) {
         formDataMap['avatar'] = await MultipartFile.fromFile(data['avatar']);
       }
 
       final formData = FormData.fromMap(formDataMap);
+      debugPrint('FormData fields: ${formData.fields}');
+
       final response = await apiClient.dio.post(
         AppConstants.updateProfileEndpoint,
         data: formData,
       );
+
+      debugPrint('Update profile response: ${response.data}');
 
       return ApiResponse<Map<String, dynamic>>.fromJson(
         response.data,
         (data) => Map<String, dynamic>.from(data),
       );
     } on DioException catch (e) {
+      debugPrint('Update profile error: ${e.message}');
       throw ErrorResponse.fromDioException(e);
     }
   }

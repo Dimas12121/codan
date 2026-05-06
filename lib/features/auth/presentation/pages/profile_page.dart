@@ -30,15 +30,18 @@ class _ProfilePageState extends State<ProfilePage> {
       source: ImageSource.gallery,
       imageQuality: 70,
     );
-    
+
     if (image != null && mounted) {
-      context.read<AuthBloc>().add(AuthUpdateProfileRequested({
-        'avatar': image.path,
-      }));
+      context.read<AuthBloc>().add(
+        AuthUpdateProfileRequested({'avatar': image.path}),
+      );
     }
   }
 
   Future<void> _updateLocation() async {
+    final authBloc = context.read<AuthBloc>();
+    final apiClient = context.read<ApiClient>();
+
     setState(() => _isUpdatingLocation = true);
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -47,10 +50,14 @@ class _ProfilePageState extends State<ProfilePage> {
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) throw 'Izin lokasi ditolak.';
+        if (permission == LocationPermission.denied) {
+          throw 'Izin lokasi ditolak.';
+        }
       }
 
-      if (permission == LocationPermission.deniedForever) throw 'Izin lokasi ditolak permanen.';
+      if (permission == LocationPermission.deniedForever) {
+        throw 'Izin lokasi ditolak permanen.';
+      }
 
       Position position = await Geolocator.getCurrentPosition();
 
@@ -61,23 +68,24 @@ class _ProfilePageState extends State<ProfilePage> {
           position.latitude,
           position.longitude,
         );
-        
+
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
           String city = place.locality ?? '';
           String regency = place.subAdministrativeArea ?? '';
-          
+
           if (city.isNotEmpty && regency.isNotEmpty) {
             locationName = "$city, $regency";
           } else {
-            locationName = city.isNotEmpty ? city : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
+            locationName = city.isNotEmpty
+                ? city
+                : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
           }
         }
       } catch (e) {
         debugPrint("Error geocoding fallback to Nominatim: $e");
         try {
-          final dio = context.read<ApiClient>().dio;
-          final response = await dio.get(
+          final response = await apiClient.dio.get(
             'https://nominatim.openstreetmap.org/reverse',
             queryParameters: {
               'format': 'json',
@@ -87,13 +95,16 @@ class _ProfilePageState extends State<ProfilePage> {
           );
           if (response.data != null && response.data['address'] != null) {
             final address = response.data['address'];
-            String city = address['city'] ?? address['town'] ?? address['village'] ?? '';
+            String city =
+                address['city'] ?? address['town'] ?? address['village'] ?? '';
             String regency = address['county'] ?? address['state'] ?? '';
-            
+
             if (city.isNotEmpty && regency.isNotEmpty) {
               locationName = "$city, $regency";
             } else {
-              locationName = city.isNotEmpty ? city : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
+              locationName = city.isNotEmpty
+                  ? city
+                  : (regency.isNotEmpty ? regency : 'Lokasi tidak diketahui');
             }
           }
         } catch (fallbackError) {
@@ -103,12 +114,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (!mounted) return;
 
-      context.read<AuthBloc>().add(AuthUpdateProfileRequested({
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-        'location': locationName,
-      }));
-      
+      authBloc.add(
+        AuthUpdateProfileRequested({
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'location': locationName,
+        }),
+      );
+
       AppSnackBar.showSuccess(context, 'Lokasi berhasil diperbarui!');
     } catch (e) {
       if (!mounted) return;
@@ -119,13 +132,45 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _openInGoogleMaps(double lat, double lng) async {
-    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
   }
 
+  void _handleRoleSwitch(BuildContext context, String? currentRole) {
+    final newRole = currentRole == 'seller' ? 'buyer' : 'seller';
+    final roleLabel = newRole == 'seller' ? 'Penjual' : 'Pembeli';
 
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Beralih Role'),
+        content: Text('Apakah Anda yakin ingin beralih menjadi $roleLabel?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<AuthBloc>().add(
+                AuthUpdateProfileRequested({'role': newRole}),
+              );
+              AppSnackBar.showSuccess(
+                context,
+                'Berhasil beralih menjadi $roleLabel',
+              );
+            },
+            child: const Text('Ya, Beralih'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,11 +181,17 @@ class _ProfilePageState extends State<ProfilePage> {
         elevation: 0,
         title: const Text(
           'Profil Saya',
-          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppColors.textPrimary),
+            icon: const Icon(
+              Icons.settings_outlined,
+              color: AppColors.textPrimary,
+            ),
             onPressed: () => context.push('/settings'),
           ),
           IconButton(
@@ -188,11 +239,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: ClipOval(
                   child: user.profilePhoto != null
                       ? Image.network(
-                          user.profilePhoto!.startsWith('http') 
-                            ? user.profilePhoto! 
-                            : '${AppConstants.baseUrl}/storage/${user.profilePhoto}',
+                          user.profilePhoto!.startsWith('http')
+                              ? user.profilePhoto!
+                              : '${AppConstants.baseUrl}/storage/${user.profilePhoto}',
                           fit: BoxFit.cover,
-                          errorBuilder: (ctx, e, st) => _buildPlaceholderAvatar(user),
+                          errorBuilder: (ctx, e, st) =>
+                              _buildPlaceholderAvatar(user),
                         )
                       : _buildPlaceholderAvatar(user),
                 ),
@@ -208,7 +260,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
@@ -217,12 +273,21 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 24),
           Text(
             user.name,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             user.role?.toUpperCase() ?? 'MEMBER',
-            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontSize: 12),
+            style: TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+              fontSize: 12,
+            ),
           ),
           const SizedBox(height: 32),
 
@@ -266,32 +331,45 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildInfoTile(Icons.email_outlined, 'Email', user.email),
           _buildInfoTile(Icons.phone_outlined, 'Nomor HP', user.phone),
           _buildInfoTile(
-            Icons.location_on_outlined, 
-            'Lokasi', 
+            Icons.location_on_outlined,
+            'Lokasi',
             user.location ?? 'Belum diatur',
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (user.latitude != null && user.longitude != null)
                   IconButton(
-                    icon: const Icon(Icons.map_outlined, color: Colors.green, size: 20),
-                    onPressed: () => _openInGoogleMaps(user.latitude!, user.longitude!),
+                    icon: const Icon(
+                      Icons.map_outlined,
+                      color: Colors.green,
+                      size: 20,
+                    ),
+                    onPressed: () =>
+                        _openInGoogleMaps(user.latitude!, user.longitude!),
                     tooltip: 'Lihat di Peta',
                   ),
-                _isUpdatingLocation 
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                    )
-                  : IconButton(
-                      icon: const Icon(Icons.my_location, color: AppColors.primary, size: 20),
-                      onPressed: _updateLocation,
-                      tooltip: 'Perbarui Lokasi',
-                    ),
+                _isUpdatingLocation
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        icon: const Icon(
+                          Icons.my_location,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                        onPressed: _updateLocation,
+                        tooltip: 'Perbarui Lokasi',
+                      ),
               ],
             ),
           ),
-          
+
           if (user.latitude != null && user.longitude != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -316,16 +394,24 @@ class _ProfilePageState extends State<ProfilePage> {
                         zoomControlsEnabled: false,
                         myLocationButtonEnabled: false,
                         liteModeEnabled: false,
-                        onTap: (_) => _openInGoogleMaps(user.latitude!, user.longitude!),
+                        onTap: (_) =>
+                            _openInGoogleMaps(user.latitude!, user.longitude!),
                       ),
                       Positioned(
                         bottom: 10,
                         right: 10,
                         child: FloatingActionButton.small(
                           heroTag: 'map_btn',
-                          onPressed: () => _openInGoogleMaps(user.latitude!, user.longitude!),
+                          onPressed: () => _openInGoogleMaps(
+                            user.latitude!,
+                            user.longitude!,
+                          ),
                           backgroundColor: Colors.white,
-                          child: const Icon(Icons.open_in_new, color: AppColors.primary, size: 18),
+                          child: const Icon(
+                            Icons.open_in_new,
+                            color: AppColors.primary,
+                            size: 18,
+                          ),
                         ),
                       ),
                     ],
@@ -333,25 +419,39 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 24),
           _buildSectionTitle('Lainnya'),
           _buildMenuTile(
-            user.role == 'seller' ? Icons.person_outline : Icons.storefront_outlined,
+            user.role == 'seller'
+                ? Icons.person_outline
+                : Icons.storefront_outlined,
             user.role == 'seller' ? 'Beralih ke Pembeli' : 'Beralih ke Penjual',
             () {
-              context.read<AuthBloc>().add(
-                AuthUpdateProfileRequested({'role': user.role == 'seller' ? 'buyer' : 'seller'}),
-              );
+              _handleRoleSwitch(context, user.role);
             },
           ),
-          _buildMenuTile(Icons.favorite_border, 'Favorit Saya', () => context.push('/wishlist')),
-          _buildMenuTile(Icons.star_border_rounded, 'Ulasan Saya', () => context.push('/reviews/${user.id}?name=${Uri.encodeComponent(user.name)}')),
+          _buildMenuTile(
+            Icons.favorite_border,
+            'Favorit Saya',
+            () => context.push('/wishlist'),
+          ),
+          _buildMenuTile(
+            Icons.star_border_rounded,
+            'Ulasan Saya',
+            () => context.push(
+              '/reviews/${user.id}?name=${Uri.encodeComponent(user.name)}',
+            ),
+          ),
           if (user.role == 'seller')
-            _buildMenuTile(Icons.store_outlined, 'Produk Saya', () => context.push('/my-products')),
+            _buildMenuTile(
+              Icons.store_outlined,
+              'Produk Saya',
+              () => context.push('/my-products'),
+            ),
           _buildMenuTile(Icons.help_outline, 'Pusat Bantuan', () {}),
           _buildMenuTile(Icons.info_outline, 'Tentang CODAN', () {}),
-          
+
           const SizedBox(height: 140), // Extra padding for bottom app button
         ],
       ),
@@ -364,13 +464,21 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Center(
         child: Text(
           user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-          style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: AppColors.primary),
+          style: const TextStyle(
+            fontSize: 48,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeaderAction({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildHeaderAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(15),
@@ -385,7 +493,10 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Icon(icon, color: AppColors.primary),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
           ],
         ),
       ),
@@ -398,19 +509,31 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey,
+        ),
       ),
     );
   }
 
-  Widget _buildInfoTile(IconData icon, String label, String value, {Widget? trailing}) {
+  Widget _buildInfoTile(
+    IconData icon,
+    String label,
+    String value, {
+    Widget? trailing,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: AppColors.primaryLight.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(icon, color: AppColors.primary, size: 20),
           ),
           const SizedBox(width: 16),
@@ -418,8 +541,18 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -435,10 +568,16 @@ class _ProfilePageState extends State<ProfilePage> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Icon(icon, color: Colors.black87, size: 20),
       ),
-      title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+      ),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
     );
   }
@@ -448,14 +587,27 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.account_circle_outlined, size: 100, color: Colors.grey[300]),
+          Icon(
+            Icons.account_circle_outlined,
+            size: 100,
+            color: Colors.grey[300],
+          ),
           const SizedBox(height: 24),
-          const Text('Masuk untuk melihat profil Anda', style: TextStyle(color: Colors.grey, fontSize: 16)),
+          const Text(
+            'Masuk untuk melihat profil Anda',
+            style: TextStyle(color: Colors.grey, fontSize: 16),
+          ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.go('/login'),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15)),
-            child: const Text('Login / Register', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+            ),
+            child: const Text(
+              'Login / Register',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -469,14 +621,20 @@ class _ProfilePageState extends State<ProfilePage> {
         title: const Text('Logout'),
         content: const Text('Apakah Anda yakin ingin keluar?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               context.read<AuthBloc>().add(AuthLogoutRequested());
               context.go('/login');
             },
-            child: const Text('Logout', style: TextStyle(color: AppColors.error)),
+            child: const Text(
+              'Logout',
+              style: TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),

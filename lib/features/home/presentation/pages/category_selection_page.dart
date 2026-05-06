@@ -23,27 +23,92 @@ class CategorySelectionPage extends StatelessWidget {
 
         if (state is ProductLoaded) {
           // Hanya hitung barang yang statusnya aktif (berdasarkan yang diupload seller)
-          final activeProducts = state.products.where((p) => p.status == 'active').toList();
-          
-          buku = activeProducts.where((p) => p.category == 'Buku' && p.type == 'sell').length;
-          elektronik = activeProducts.where((p) => p.category == 'Elektronik' && p.type == 'sell').length;
-          fashion = activeProducts.where((p) => p.category == 'Fashion' && p.type == 'sell').length;
-          kendaraan = activeProducts.where((p) => p.category == 'Kendaraan' && p.type == 'sell').length;
-          gaming = activeProducts.where((p) => p.category == 'Gaming' && p.type == 'sell').length;
+          final activeProducts = state.products
+              .where((p) => p.status == 'active')
+              .toList();
+
+          buku = activeProducts
+              .where((p) => p.category == 'Buku' && p.type == 'sell')
+              .length;
+          elektronik = activeProducts
+              .where((p) => p.category == 'Elektronik' && p.type == 'sell')
+              .length;
+          fashion = activeProducts
+              .where((p) => p.category == 'Fashion' && p.type == 'sell')
+              .length;
+          kendaraan = activeProducts
+              .where((p) => p.category == 'Kendaraan' && p.type == 'sell')
+              .length;
+          gaming = activeProducts
+              .where((p) => p.category == 'Gaming' && p.type == 'sell')
+              .length;
           sewa = activeProducts.where((p) => p.type == 'rent').length;
-          
-          final knownCategories = ['Buku', 'Elektronik', 'Fashion', 'Kendaraan', 'Gaming'];
-          lainnya = activeProducts.where((p) => p.type == 'sell' && !knownCategories.contains(p.category)).length;
+
+          final knownCategories = [
+            'Buku',
+            'Elektronik',
+            'Fashion',
+            'Kendaraan',
+            'Gaming',
+          ];
+          lainnya = activeProducts
+              .where(
+                (p) =>
+                    p.type == 'sell' && !knownCategories.contains(p.category),
+              )
+              .length;
         }
 
         final List<Map<String, dynamic>> categories = [
-          {'label': 'Buku', 'icon': Icons.book_rounded, 'color': Colors.blue, 'bg': AppColors.accentBlue, 'count': buku},
-          {'label': 'Elektronik', 'icon': Icons.laptop_rounded, 'color': AppColors.primary, 'bg': AppColors.primaryLight, 'count': elektronik},
-          {'label': 'Fashion', 'icon': Icons.checkroom_rounded, 'color': Colors.pinkAccent, 'bg': AppColors.accentPink, 'count': fashion},
-          {'label': 'Kendaraan', 'icon': Icons.directions_car_rounded, 'color': Colors.orange, 'bg': AppColors.accentOrange, 'count': kendaraan},
-          {'label': 'Gaming', 'icon': Icons.sports_esports_rounded, 'color': Colors.green, 'bg': AppColors.accentGreen, 'count': gaming},
-          {'label': 'Lainnya', 'icon': Icons.more_horiz_rounded, 'color': Colors.grey, 'bg': Colors.grey.shade100, 'count': lainnya},
-          {'label': 'Sewa Barang', 'icon': Icons.swap_horiz_rounded, 'color': const Color(0xFF7E57C2), 'bg': const Color(0xFFF3E5F5), 'count': sewa},
+          {
+            'label': 'Buku',
+            'image': 'assets/images/category/buku.png',
+            'color': Colors.blue,
+            'bg': AppColors.accentBlue,
+            'count': buku,
+          },
+          {
+            'label': 'Elektronik',
+            'image': 'assets/images/category/elektronik.png',
+            'color': AppColors.primary,
+            'bg': AppColors.primaryLight,
+            'count': elektronik,
+          },
+          {
+            'label': 'Fashion',
+            'image': 'assets/images/category/baju.png',
+            'color': Colors.pinkAccent,
+            'bg': AppColors.accentPink,
+            'count': fashion,
+          },
+          {
+            'label': 'Kendaraan',
+            'image': 'assets/images/category/mobil.png',
+            'color': Colors.orange,
+            'bg': AppColors.accentOrange,
+            'count': kendaraan,
+          },
+          {
+            'label': 'Gaming',
+            'image': 'assets/images/category/elektronik.png',
+            'color': Colors.green,
+            'bg': AppColors.accentGreen,
+            'count': gaming,
+          },
+          {
+            'label': 'Lainnya',
+            'image': 'assets/images/category/elektronik.png',
+            'color': Colors.grey,
+            'bg': Colors.grey.shade100,
+            'count': lainnya,
+          },
+          {
+            'label': 'Sewa Barang',
+            'image': 'assets/images/category/sewa.png',
+            'color': const Color(0xFF7E57C2),
+            'bg': const Color(0xFFF3E5F5),
+            'count': sewa,
+          },
         ];
 
         return Scaffold(
@@ -57,7 +122,10 @@ class CategorySelectionPage extends StatelessWidget {
             ),
             title: const Text(
               'Kategori',
-              style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             centerTitle: false,
           ),
@@ -108,7 +176,13 @@ class CategorySelectionPage extends StatelessWidget {
                             color: cat['bg'],
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Icon(cat['icon'], color: cat['color'], size: 30),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset(
+                              cat['image'],
+                              fit: BoxFit.contain,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Text(
